@@ -1,0 +1,49 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.vs/
+.vs/
+.vscode/
+Migrations/*.Designer.cs.bak
+
+# ASP.NET Core secrets
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json
+
+# Angular / Node
+node_modules/
+dist/
+.angular/
+coverage/
+*.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code
+CLAUDE.local.md
+.claude/cache/
+.claude/settings.local.json
+
+# Azure / local SQL
+**/.azure/
+*.mdf
+*.ldf
+
+# Design working files
+design/.exports/
+design/*.sketch
+design/*.fig
+
+# Temp migration scripts
+migrate.sql
+*.migration.sql

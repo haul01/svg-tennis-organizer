@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "stitch": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "stitch-mcp"
+      ],
+      "env": {
+        "GOOGLE_CLOUD_PROJECT": "project-4605a849-54d0-4e44-bf8"
+      }
+    }
+  }
+}
