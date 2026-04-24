@@ -125,7 +125,7 @@ public static class SeedData
         {
             Id = 1,
             MaxAdvanceBookingDays = 7,
-            MinCancellationHours = 2,
+            MinCancellationHours = 0,
             MaxOpenReservationsPerMember = 2
         });
         await db.SaveChangesAsync(ct);

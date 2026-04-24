@@ -1,0 +1,229 @@
+@use '../../../../styles/tokens' as *;
+
+:host { display: block; }
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tc-space-md);
+  max-width: 1100px;
+  margin-inline: auto;
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tc-space-base);
+  }
+
+  &__kicker {
+    @include tc-label-bold;
+    color: var(--tc-on-surface-variant);
+    text-transform: uppercase;
+  }
+
+  h1 {
+    @include tc-headline-lg;
+    margin: 0;
+  }
+
+  &__subtitle {
+    @include tc-body-md;
+    margin: 0;
+    color: var(--tc-on-surface-variant);
+  }
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: var(--tc-space-xs);
+  padding: var(--tc-space-sm) var(--tc-space-md);
+  border-radius: var(--tc-radius);
+
+  &--error {
+    background: var(--tc-error-container);
+    color: var(--tc-on-error-container);
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--tc-space-sm);
+  padding: var(--tc-space-xl);
+  text-align: center;
+  background: var(--tc-surface-container-lowest);
+  border: 1px dashed var(--tc-outline-variant);
+  border-radius: var(--tc-radius-xl);
+  color: var(--tc-on-surface-variant);
+
+  mat-icon { font-size: 48px; width: 48px; height: 48px; }
+  p { @include tc-body-lg; margin: 0; }
+}
+
+.cta {
+  background: var(--tc-deep-navy);
+  color: var(--tc-surface-container-lowest);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tc-space-sm);
+
+  &__heading {
+    display: flex;
+    align-items: center;
+    gap: var(--tc-space-xs);
+
+    mat-icon { color: var(--tc-on-surface-variant); }
+
+    h2 {
+      @include tc-headline-md;
+      margin: 0;
+      flex: 1;
+    }
+  }
+
+  &__count {
+    @include tc-label-bold;
+    padding: 2px var(--tc-space-xs);
+    border-radius: var(--tc-radius-full);
+    background: var(--tc-surface-container);
+    color: var(--tc-on-surface-variant);
+  }
+
+  &__toggle {
+    all: unset;
+    display: flex;
+    align-items: center;
+    gap: var(--tc-space-xs);
+    padding: var(--tc-space-xs) 0;
+    cursor: pointer;
+
+    h2 {
+      @include tc-headline-md;
+      margin: 0;
+      flex: 1;
+      color: var(--tc-on-surface);
+    }
+
+    mat-icon { color: var(--tc-on-surface-variant); }
+
+    &:hover h2 { color: var(--tc-deep-navy); }
+  }
+
+  &__empty {
+    @include tc-body-md;
+    color: var(--tc-on-surface-variant);
+
+    a {
+      color: var(--tc-deep-navy);
+      font-weight: 600;
+      margin-left: var(--tc-space-base);
+    }
+  }
+}
+
+.cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--tc-space-md);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tc-space-sm);
+  padding: var(--tc-space-md);
+  background: var(--tc-surface-container-lowest);
+  border: 1px solid var(--tc-outline-variant);
+  border-radius: var(--tc-radius-lg);
+
+  &--past {
+    background: var(--tc-surface-container-low);
+    opacity: 0.9;
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--tc-space-xs);
+  }
+
+  &__court {
+    @include tc-headline-md;
+    color: var(--tc-on-surface);
+  }
+
+  &__badge {
+    @include tc-label-sm;
+    padding: 2px var(--tc-space-xs);
+    border-radius: var(--tc-radius-full);
+    background: var(--tc-surface-container);
+    color: var(--tc-on-surface-variant);
+    text-transform: uppercase;
+
+    &--active {
+      background: var(--tc-tennis-green);
+      color: var(--tc-deep-navy);
+    }
+
+    &--cancelled {
+      background: var(--tc-error-container);
+      color: var(--tc-on-error-container);
+    }
+  }
+
+  &__meta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tc-space-xs);
+    margin: 0;
+
+    div {
+      display: flex;
+      align-items: center;
+      gap: var(--tc-space-xs);
+    }
+
+    dt {
+      margin: 0;
+      display: inline-flex;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: var(--tc-on-surface-variant);
+      }
+    }
+
+    dd {
+      @include tc-body-md;
+      margin: 0;
+      color: var(--tc-on-surface);
+    }
+  }
+
+  &__cancel {
+    align-self: stretch;
+    border-color: var(--tc-outline-variant);
+    color: var(--tc-on-surface);
+  }
+
+  &__cancel-blocked {
+    @include tc-label-sm;
+    margin: 0;
+    text-align: center;
+    color: var(--tc-on-surface-variant);
+    background: var(--tc-surface-container);
+    padding: var(--tc-space-xs);
+    border-radius: var(--tc-radius);
+  }
+}

@@ -1,0 +1,141 @@
+<section class="page">
+  <header class="page__header">
+    <span class="page__kicker">ÜBERBLICK</span>
+    <h1>Meine Buchungen</h1>
+    <p class="page__subtitle">
+      Verwalte deine Tennisplatz-Reservierungen und sieh deine Historie ein.
+    </p>
+  </header>
+
+  @if (error(); as msg) {
+    <div class="banner banner--error" role="alert">
+      <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
+      <span>{{ msg }}</span>
+    </div>
+  }
+
+  @if (loading() && viewModels().length === 0) {
+    <div class="empty-state" role="status" aria-live="polite">
+      <mat-spinner diameter="36" />
+      <p>Buchungen werden geladen…</p>
+    </div>
+  } @else if (viewModels().length === 0) {
+    <div class="empty-state">
+      <mat-icon fontSet="material-symbols-outlined">event_available</mat-icon>
+      <p>Noch keine Buchungen vorhanden.</p>
+      <button mat-flat-button class="cta" (click)="goBook()">
+        Jetzt Platz buchen
+      </button>
+    </div>
+  } @else {
+    <section class="group" aria-labelledby="upcoming-heading">
+      <div class="group__heading">
+        <mat-icon fontSet="material-symbols-outlined">event</mat-icon>
+        <h2 id="upcoming-heading">Kommende Buchungen</h2>
+        <span class="group__count">{{ upcoming().length }}</span>
+      </div>
+
+      @if (upcoming().length === 0) {
+        <p class="group__empty">
+          Keine kommenden Buchungen.
+          <a routerLink="/reservations">Jetzt Platz buchen</a>
+        </p>
+      } @else {
+        <ul class="cards">
+          @for (r of upcoming(); track trackById($index, r)) {
+            <li class="card">
+              <header class="card__header">
+                <span class="card__court">{{ r.courtName }}</span>
+                <span class="card__badge card__badge--active">Aktiv</span>
+              </header>
+              <dl class="card__meta">
+                <div>
+                  <dt><mat-icon fontSet="material-symbols-outlined">calendar_month</mat-icon></dt>
+                  <dd>{{ formatDate(r.startsAtDate) }}</dd>
+                </div>
+                <div>
+                  <dt><mat-icon fontSet="material-symbols-outlined">schedule</mat-icon></dt>
+                  <dd>{{ formatTimeRange(r.startsAtDate, r.endsAtDate) }} · {{ r.durationMinutes }} Min.</dd>
+                </div>
+                @if (r.guestName; as g) {
+                  <div>
+                    <dt><mat-icon fontSet="material-symbols-outlined">group</mat-icon></dt>
+                    <dd>Gast: {{ g }}</dd>
+                  </div>
+                }
+              </dl>
+              @if (r.canCancel) {
+                <button
+                  mat-stroked-button
+                  class="card__cancel"
+                  [disabled]="cancelInFlight() === r.id"
+                  (click)="onCancel(r)"
+                >
+                  @if (cancelInFlight() === r.id) {
+                    <mat-spinner diameter="18" />
+                    Storniert…
+                  } @else {
+                    Stornieren
+                  }
+                </button>
+              } @else {
+                <p class="card__cancel-blocked">{{ r.cancelBlockedReason }}</p>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <section class="group group--past" aria-labelledby="past-heading">
+      <button
+        class="group__toggle"
+        type="button"
+        (click)="togglePast()"
+        [attr.aria-expanded]="showPast()"
+      >
+        <mat-icon fontSet="material-symbols-outlined">
+          {{ showPast() ? 'expand_more' : 'chevron_right' }}
+        </mat-icon>
+        <h2 id="past-heading">Vergangene Buchungen</h2>
+        <span class="group__count">{{ past().length }}</span>
+      </button>
+
+      @if (showPast()) {
+        @if (past().length === 0) {
+          <p class="group__empty">Noch keine vergangenen Buchungen.</p>
+        } @else {
+          <ul class="cards">
+            @for (r of past(); track trackById($index, r)) {
+              <li class="card card--past">
+                <header class="card__header">
+                  <span class="card__court">{{ r.courtName }}</span>
+                  <span
+                    class="card__badge"
+                    [class.card__badge--cancelled]="r.status === 1"
+                  >{{ r.status === 1 ? 'Storniert' : 'Abgeschlossen' }}</span>
+                </header>
+                <dl class="card__meta">
+                  <div>
+                    <dt><mat-icon fontSet="material-symbols-outlined">calendar_month</mat-icon></dt>
+                    <dd>{{ formatDate(r.startsAtDate) }}</dd>
+                  </div>
+                  <div>
+                    <dt><mat-icon fontSet="material-symbols-outlined">schedule</mat-icon></dt>
+                    <dd>{{ formatTimeRange(r.startsAtDate, r.endsAtDate) }}</dd>
+                  </div>
+                  @if (r.guestName; as g) {
+                    <div>
+                      <dt><mat-icon fontSet="material-symbols-outlined">group</mat-icon></dt>
+                      <dd>Gast: {{ g }}</dd>
+                    </div>
+                  }
+                </dl>
+              </li>
+            }
+          </ul>
+        }
+      }
+    </section>
+  }
+</section>

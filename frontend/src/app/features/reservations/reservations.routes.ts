@@ -1,7 +1,5 @@
 import { Routes } from '@angular/router';
 
-import { PlaceholderComponent } from '../../shared/components/placeholder.component';
-
 export const reservationsRoutes: Routes = [
   {
     path: '',
@@ -9,5 +7,10 @@ export const reservationsRoutes: Routes = [
     loadComponent: () =>
       import('./week-grid/week-grid.component').then(m => m.WeekGridComponent)
   },
-  { path: 'mine', component: PlaceholderComponent, title: 'Meine Buchungen' }
+  {
+    path: 'mine',
+    title: 'Meine Buchungen',
+    loadComponent: () =>
+      import('./my-reservations/my-reservations.component').then(m => m.MyReservationsComponent)
+  }
 ];
