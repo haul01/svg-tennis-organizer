@@ -1,0 +1,82 @@
+<div class="dialog-header">
+  <h2 mat-dialog-title>{{ data.courtName }} buchen</h2>
+  <button
+    mat-icon-button
+    type="button"
+    (click)="cancel()"
+    aria-label="Dialog schließen"
+  >
+    <mat-icon fontSet="material-symbols-outlined">close</mat-icon>
+  </button>
+</div>
+
+<mat-dialog-content>
+  <div class="slot-summary">
+    <div class="slot-summary__icon" aria-hidden="true">
+      <mat-icon fontSet="material-symbols-outlined">calendar_month</mat-icon>
+    </div>
+    <div class="slot-summary__text">
+      <span class="slot-summary__date">{{ dateLabel() }}</span>
+      <span class="slot-summary__time">{{ timeRangeLabel() }}</span>
+    </div>
+  </div>
+
+  <div class="guest-toggle">
+    <mat-slide-toggle
+      color="primary"
+      [checked]="hasGuest()"
+      (change)="onGuestToggle($event.checked)"
+    >
+      Mit Gastspieler spielen
+    </mat-slide-toggle>
+  </div>
+
+  @if (hasGuest()) {
+    <div class="fee-hint" role="note">
+      <mat-icon fontSet="material-symbols-outlined">info</mat-icon>
+      <span>Gastspielergebühr bitte im Vereinsheim entrichten.</span>
+    </div>
+  }
+
+  @if (errorMessage(); as msg) {
+    <div class="error-banner" role="alert">
+      <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
+      <div class="error-banner__body">
+        <span>{{ msg }}</span>
+        @if (ruleFailures().length > 0) {
+          <ul>
+            @for (f of ruleFailures(); track f.code) {
+              <li>{{ f.message }}</li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button
+    mat-stroked-button
+    type="button"
+    class="cancel"
+    (click)="cancel()"
+    [disabled]="submitting()"
+  >Abbrechen</button>
+  <button
+    mat-flat-button
+    type="button"
+    class="submit"
+    (click)="submit()"
+    [disabled]="submitting()"
+  >
+    @if (submitting()) {
+      <span class="submit__content">
+        <mat-spinner diameter="18" class="submit__spinner" />
+        Buchen…
+      </span>
+    } @else {
+      <span>Buchen</span>
+    }
+  </button>
+</mat-dialog-actions>

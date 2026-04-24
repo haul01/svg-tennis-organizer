@@ -32,3 +32,9 @@ body {
 h1 { @include tc-headline-xl; }
 h2 { @include tc-headline-lg; }
 h3 { @include tc-headline-md; }
+
+// MDC dialogs render the surface transparent when the Material theme uses
+// only a partial palette; force the brand surface so the dialog is readable.
+.mat-mdc-dialog-container .mdc-dialog__surface {
+  background-color: var(--tc-surface-container-lowest);
+}

@@ -7,6 +7,7 @@ import {
   signal
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -18,6 +19,11 @@ import { CourtsApi } from '../../../core/api/courts.api';
 import { SeasonsApi } from '../../../core/api/seasons.api';
 import { CourtDto } from '../../../core/models/court.model';
 import { SeasonDto } from '../../../core/models/season.model';
+import {
+  BookingDialogComponent,
+  BookingDialogData,
+  BookingDialogResult
+} from '../booking-dialog/booking-dialog.component';
 import { WeekReservationDto } from '../reservation.model';
 import { ReservationsService } from '../reservations.service';
 
@@ -43,6 +49,7 @@ export class WeekGridComponent {
   private readonly courtsApi = inject(CourtsApi);
   private readonly seasonsApi = inject(SeasonsApi);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly dialog = inject(MatDialog);
 
   // State
   readonly courts = signal<CourtDto[]>([]);
@@ -140,14 +147,28 @@ export class WeekGridComponent {
 
   onCellClick(cell: Cell): void {
     if (cell.state !== 'free') return;
-    // Prompt 11 will open the real booking dialog. For now, tell the user
-    // we registered the tap so the interaction is at least discoverable.
-    const time = format(cell.startsAt, 'HH:mm');
-    this.snackBar.open(
-      `Buchung für Platz ${cell.courtId} am ${format(cell.startsAt, 'd. MMMM', { locale: de })} um ${time} — Dialog folgt in Phase 5 Schritt 3.`,
-      'OK',
-      { duration: 4000 }
-    );
+
+    const court = this.courts().find(c => c.id === cell.courtId);
+    const data: BookingDialogData = {
+      courtId: cell.courtId,
+      courtName: court?.name ?? `Platz ${cell.courtId}`,
+      startsAt: cell.startsAt,
+      endsAt: cell.endsAt
+    };
+
+    const ref = this.dialog.open<
+      BookingDialogComponent,
+      BookingDialogData,
+      BookingDialogResult
+    >(BookingDialogComponent, { data, width: '480px', autoFocus: false });
+
+    ref.afterClosed().subscribe(result => {
+      if (result?.ok) {
+        this.snackBar.open('Buchung bestätigt. Bestätigungsmail unterwegs.', 'OK', {
+          duration: 4000
+        });
+      }
+    });
   }
 
   private async bootstrap(): Promise<void> {
