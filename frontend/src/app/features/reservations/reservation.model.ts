@@ -1,0 +1,50 @@
+// Mirrors TennisClub.Api.Domain.Enums.ReservationStatus
+export enum ReservationStatus {
+  Active = 0,
+  Cancelled = 1
+}
+
+/**
+ * Week-grid projection. For foreign reservations the server sets
+ * isMine=false and strips guestName - never show names to other members.
+ */
+export interface WeekReservationDto {
+  id: string;
+  courtId: number;
+  startsAt: string; // ISO 8601 with offset
+  endsAt: string;
+  isMine: boolean;
+  guestName: string | null;
+}
+
+/**
+ * Member-owned reservation listing. `rowVersion` is the base64-encoded
+ * concurrency token - echo it back via the If-Match header on cancel.
+ */
+export interface MyReservationDto {
+  id: string;
+  courtId: number;
+  courtName: string;
+  startsAt: string;
+  endsAt: string;
+  status: ReservationStatus;
+  cancelledAt: string | null;
+  guestName: string | null;
+  rowVersion: string;
+}
+
+export interface CreateReservationRequest {
+  courtId: number;
+  startsAt: string;
+  endsAt: string;
+  guestPlayerId: string | null;
+}
+
+export interface CreateReservationResponse {
+  id: string;
+}
+
+export interface ListMineOptions {
+  upcomingOnly?: boolean;
+  status?: ReservationStatus;
+}
