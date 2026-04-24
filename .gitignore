@@ -47,3 +47,6 @@ design/*.fig
 # Temp migration scripts
 migrate.sql
 *.migration.sql
+
+# Stitch MCP screen-fetch artefacts (land at repo root by default)
+/screen_*.png

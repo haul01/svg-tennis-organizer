@@ -138,6 +138,21 @@ builder.Services.Configure<SeedOptions>(
 
 builder.Services.AddSingleton(TimeProvider.System);
 
+// CORS for the Angular dev server. Production origins go into Cors:AllowedOrigins
+// via container-app env vars.
+var allowedOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>() ?? ["http://localhost:4200"];
+
+builder.Services.AddCors(opts =>
+{
+    opts.AddDefaultPolicy(policy => policy
+        .WithOrigins(allowedOrigins)
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .WithExposedHeaders("Location"));
+});
+
 builder.Services.AddEndpoints();
 builder.Services.AddOpenApi();
 
@@ -150,6 +165,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors();
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();

@@ -1,0 +1,107 @@
+// Design tokens derived from DESIGN.md (Stitch: "Advantage Point").
+// Exposed as CSS custom properties so templates can reference them directly.
+
+:root {
+  // Brand accents
+  --tc-deep-navy: #0a192f;
+  --tc-tennis-green: #c1ff22;
+  --tc-slate: #64748b;
+
+  // Surfaces
+  --tc-surface: #f8f9ff;
+  --tc-surface-dim: #cbdbf5;
+  --tc-surface-bright: #f8f9ff;
+  --tc-surface-container-lowest: #ffffff;
+  --tc-surface-container-low: #eff4ff;
+  --tc-surface-container: #e5eeff;
+  --tc-surface-container-high: #dce9ff;
+  --tc-surface-container-highest: #d3e4fe;
+  --tc-on-surface: #0b1c30;
+  --tc-on-surface-variant: #44474d;
+  --tc-outline: #75777e;
+  --tc-outline-variant: #c5c6cd;
+
+  // Status
+  --tc-error: #ba1a1a;
+  --tc-on-error: #ffffff;
+  --tc-error-container: #ffdad6;
+  --tc-on-error-container: #93000a;
+
+  // Spacing (4-er Raster)
+  --tc-space-base: 4px;
+  --tc-space-xs: 8px;
+  --tc-space-sm: 16px;
+  --tc-space-md: 24px;
+  --tc-space-lg: 40px;
+  --tc-space-xl: 64px;
+  --tc-space-grid-gutter: 12px;
+
+  // Radius
+  --tc-radius-sm: 0.25rem;
+  --tc-radius: 0.5rem;
+  --tc-radius-md: 0.75rem;
+  --tc-radius-lg: 1rem;
+  --tc-radius-xl: 1.5rem;
+  --tc-radius-full: 9999px;
+
+  // Elevation
+  --tc-shadow-2: 0 2px 4px rgba(10, 25, 47, 0.08);
+  --tc-shadow-overlay: 0 8px 24px rgba(10, 25, 47, 0.16);
+
+  // Typography scale (Lexend headlines, Inter body)
+  --tc-font-headline: 'Lexend', 'Inter', system-ui, sans-serif;
+  --tc-font-body: 'Inter', system-ui, sans-serif;
+}
+
+// Utility mixins for the seven type roles.
+
+@mixin tc-headline-xl {
+  font-family: var(--tc-font-headline);
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+@mixin tc-headline-lg {
+  font-family: var(--tc-font-headline);
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+@mixin tc-headline-md {
+  font-family: var(--tc-font-headline);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+@mixin tc-body-lg {
+  font-family: var(--tc-font-body);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+@mixin tc-body-md {
+  font-family: var(--tc-font-body);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+@mixin tc-label-bold {
+  font-family: var(--tc-font-body);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+}
+
+@mixin tc-label-sm {
+  font-family: var(--tc-font-body);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+}

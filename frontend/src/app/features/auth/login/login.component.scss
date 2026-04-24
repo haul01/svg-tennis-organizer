@@ -1,0 +1,157 @@
+@use '../../../../styles/tokens' as *;
+
+:host {
+  display: block;
+  min-height: 100vh;
+  background:
+    radial-gradient(at 0% 0%, rgba(193, 255, 34, 0.08) 0, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(10, 25, 47, 0.04) 0, transparent 50%),
+    var(--tc-surface);
+}
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--tc-space-md);
+  gap: var(--tc-space-lg);
+}
+
+.brand {
+  text-align: center;
+
+  &__mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    margin: 0 auto var(--tc-space-md);
+    border-radius: var(--tc-radius-lg);
+    background: var(--tc-deep-navy);
+    box-shadow: var(--tc-shadow-2);
+
+    mat-icon {
+      color: var(--tc-tennis-green);
+      font-size: 40px;
+      width: 40px;
+      height: 40px;
+      font-variation-settings: 'FILL' 1;
+    }
+  }
+
+  &__title {
+    @include tc-headline-xl;
+    margin: 0;
+    color: var(--tc-on-surface);
+  }
+
+  &__tagline {
+    @include tc-label-bold;
+    margin: var(--tc-space-base) 0 0;
+    color: var(--tc-on-surface-variant);
+    text-transform: uppercase;
+  }
+}
+
+.card {
+  width: 100%;
+  max-width: 440px;
+  padding: var(--tc-space-lg);
+  background: var(--tc-surface-container-lowest);
+  border: 1px solid var(--tc-outline-variant);
+  border-radius: var(--tc-radius-xl);
+  box-shadow: 0 8px 30px rgba(10, 25, 47, 0.04);
+
+  &__heading {
+    margin: 0 0 var(--tc-space-md);
+
+    h2 {
+      @include tc-headline-md;
+      margin: 0;
+      color: var(--tc-on-surface);
+    }
+
+    p {
+      @include tc-label-sm;
+      margin: var(--tc-space-base) 0 0;
+      color: var(--tc-on-surface-variant);
+    }
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tc-space-sm);
+  }
+}
+
+.field {
+  width: 100%;
+}
+
+.toggle-visibility {
+  color: var(--tc-on-surface-variant);
+}
+
+.forgot-link {
+  @include tc-label-sm;
+  color: var(--tc-deep-navy);
+  text-decoration: none;
+  align-self: flex-end;
+  margin-top: -#{var(--tc-space-xs)};
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--tc-space-xs);
+  margin-bottom: var(--tc-space-md);
+  padding: var(--tc-space-sm);
+  border-radius: var(--tc-radius);
+  background: var(--tc-error-container);
+  color: var(--tc-on-error-container);
+
+  mat-icon {
+    color: var(--tc-on-error-container);
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.submit {
+  height: 56px;
+  margin-top: var(--tc-space-xs);
+  background: var(--tc-deep-navy);
+  color: var(--tc-surface-container-lowest);
+  border-radius: var(--tc-radius);
+  font-weight: 600;
+
+  // Override Angular Material hover tone so it stays on-brand.
+  &:hover:not([disabled]) {
+    background: #12274a;
+  }
+
+  &__content {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--tc-space-xs);
+  }
+
+  &__spinner ::ng-deep circle {
+    stroke: var(--tc-surface-container-lowest);
+  }
+}
+
+.footer {
+  @include tc-label-sm;
+  color: var(--tc-on-surface-variant);
+  opacity: 0.7;
+}
