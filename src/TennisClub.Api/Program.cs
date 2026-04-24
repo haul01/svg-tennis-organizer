@@ -14,11 +14,13 @@ using TennisClub.Api.Features.Auth.Logout;
 using TennisClub.Api.Features.Auth.Refresh;
 using TennisClub.Api.Features.Auth.ResetPassword;
 using TennisClub.Api.Features.Auth.Shared;
+using TennisClub.Api.Features.Courts.List;
 using TennisClub.Api.Features.Reservations.Cancel;
 using TennisClub.Api.Features.Reservations.Create;
 using TennisClub.Api.Features.Reservations.ListForWeek;
 using TennisClub.Api.Features.Reservations.ListMine;
 using TennisClub.Api.Features.Reservations.Rules;
+using TennisClub.Api.Features.Seasons.Current;
 using TennisClub.Api.Infrastructure.Auth;
 using TennisClub.Api.Infrastructure.Email;
 using TennisClub.Api.Infrastructure.Persistence;
@@ -120,6 +122,8 @@ builder.Services.AddScoped<CreateReservationHandler>();
 builder.Services.AddScoped<CancelReservationHandler>();
 builder.Services.AddScoped<ListForWeekHandler>();
 builder.Services.AddScoped<ListMineHandler>();
+builder.Services.AddScoped<ListCourtsHandler>();
+builder.Services.AddScoped<GetCurrentSeasonHandler>();
 
 // Booking rule engine + all nine rules.
 builder.Services.AddBookingRules();
