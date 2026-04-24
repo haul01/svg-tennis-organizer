@@ -1,0 +1,125 @@
+<section class="page">
+  <header class="page__header">
+    <div>
+      <span class="page__kicker">ADMINISTRATION</span>
+      <h1>Saison</h1>
+      <p class="page__subtitle">
+        Verwalte Platzverfügbarkeiten und Zeitpläne der aktuellen Saison.
+      </p>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="empty-state" role="status" aria-live="polite">
+      <mat-spinner diameter="32" />
+      <p>Saison wird geladen…</p>
+    </div>
+  } @else if (season(); as s) {
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate class="card">
+      <header class="card__header">
+        <h2>Aktuelle Saison</h2>
+        <span class="badge">Aktiv</span>
+      </header>
+
+      <mat-form-field appearance="outline" class="field">
+        <mat-label>Saisonname</mat-label>
+        <input matInput type="text" formControlName="name" required maxlength="100" />
+        @if (form.controls.name.touched && form.controls.name.hasError('required')) {
+          <mat-error>Name ist erforderlich.</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="row">
+        <mat-form-field appearance="outline">
+          <mat-label>Start-Datum</mat-label>
+          <input matInput [matDatepicker]="startPicker" formControlName="startDate" required />
+          <mat-datepicker-toggle matIconSuffix [for]="startPicker" />
+          <mat-datepicker #startPicker />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Ende-Datum</mat-label>
+          <input matInput [matDatepicker]="endPicker" formControlName="endDate" required />
+          <mat-datepicker-toggle matIconSuffix [for]="endPicker" />
+          <mat-datepicker #endPicker />
+        </mat-form-field>
+      </div>
+
+      <div class="row">
+        <mat-form-field appearance="outline">
+          <mat-label>Öffnungszeit</mat-label>
+          <input matInput type="time" formControlName="openingTime" required />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Schlusszeit</mat-label>
+          <input matInput type="time" formControlName="closingTime" required />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Slot-Dauer</mat-label>
+          <input
+            matInput
+            type="number"
+            min="15"
+            max="240"
+            step="5"
+            formControlName="slotDurationMinutes"
+            required
+          />
+          <span matTextSuffix>Min.</span>
+          @if (form.controls.slotDurationMinutes.hasError('min')
+            || form.controls.slotDurationMinutes.hasError('max')) {
+            <mat-error>Zwischen 15 und 240 Minuten.</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      @if (errorMessage(); as msg) {
+        <div class="error-banner" role="alert">
+          <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
+          <div class="error-banner__body">
+            <span>{{ msg }}</span>
+            @if (failures().length > 0) {
+              <ul>
+                @for (f of failures(); track f.code) {
+                  <li>{{ f.message }}</li>
+                }
+              </ul>
+            }
+          </div>
+        </div>
+      }
+
+      <p class="warning">
+        <mat-icon fontSet="material-symbols-outlined">warning</mat-icon>
+        Änderungen können bestehende Buchungen betreffen. Buchungen außerhalb
+        der neuen Saisonzeiten bleiben bestehen, neue Buchungen sind jedoch
+        nur innerhalb möglich.
+      </p>
+
+      <div class="actions">
+        <button
+          mat-flat-button
+          type="submit"
+          class="save"
+          [disabled]="saving() || form.invalid || !form.dirty"
+        >
+          @if (saving()) {
+            <span class="save__content">
+              <mat-spinner diameter="18" class="save__spinner" />
+              Speichern…
+            </span>
+          } @else {
+            <span>Änderungen speichern</span>
+          }
+        </button>
+      </div>
+    </form>
+  } @else {
+    <div class="empty-state">
+      <mat-icon fontSet="material-symbols-outlined">event_busy</mat-icon>
+      <p>{{ errorMessage() ?? 'Keine Saison verfügbar.' }}</p>
+    </div>
+  }
+</section>

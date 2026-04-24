@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { SeasonDto } from '../models/season.model';
+import { SeasonDto, UpdateSeasonRequest } from '../models/season.model';
 
 @Injectable({ providedIn: 'root' })
 export class SeasonsApi {
@@ -19,5 +19,9 @@ export class SeasonsApi {
       observe: 'body',
       responseType: 'json'
     });
+  }
+
+  update(id: number, req: UpdateSeasonRequest): Observable<SeasonDto> {
+    return this.http.put<SeasonDto>(`${this.baseUrl}/${id}`, req);
   }
 }

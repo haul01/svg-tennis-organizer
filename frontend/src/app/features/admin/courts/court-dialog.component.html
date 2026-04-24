@@ -1,0 +1,65 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Platz bearbeiten' : 'Neuer Platz' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <mat-form-field appearance="outline" class="field">
+      <mat-label>Name</mat-label>
+      <input matInput type="text" formControlName="name" maxlength="50" required />
+      @if (form.controls.name.touched && form.controls.name.hasError('required')) {
+        <mat-error>Name ist erforderlich.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="field">
+      <mat-label>Reihenfolge</mat-label>
+      <input matInput type="number" min="0" formControlName="displayOrder" />
+      <mat-hint>Leer lassen → ans Ende.</mat-hint>
+    </mat-form-field>
+
+    @if (isEdit) {
+      <div class="toggle">
+        <mat-slide-toggle color="primary" formControlName="isActive">
+          Platz ist aktiv (buchbar)
+        </mat-slide-toggle>
+      </div>
+    }
+  </form>
+
+  @if (errorMessage(); as msg) {
+    <div class="error-banner" role="alert">
+      <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
+      <div class="error-banner__body">
+        <span>{{ msg }}</span>
+        @if (failures().length > 0) {
+          <ul>
+            @for (f of failures(); track f.code) {
+              <li>{{ f.message }}</li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button type="button" (click)="cancel()" [disabled]="submitting()">
+    Abbrechen
+  </button>
+  <button
+    mat-flat-button
+    type="button"
+    class="submit"
+    [disabled]="submitting()"
+    (click)="submit()"
+  >
+    @if (submitting()) {
+      <span class="submit__content">
+        <mat-spinner diameter="18" class="submit__spinner" />
+        Speichern…
+      </span>
+    } @else {
+      <span>{{ isEdit ? 'Speichern' : 'Platz anlegen' }}</span>
+    }
+  </button>
+</mat-dialog-actions>

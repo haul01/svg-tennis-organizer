@@ -1,0 +1,150 @@
+<section class="page">
+  <header class="page__header">
+    <div>
+      <span class="page__kicker">ADMINISTRATION</span>
+      <h1>Buchungsregeln</h1>
+      <p class="page__subtitle">
+        Lege fest, wie und wann Mitglieder Plätze reservieren oder stornieren können.
+      </p>
+    </div>
+    <button
+      mat-flat-button
+      class="save"
+      type="button"
+      [disabled]="saving() || form.invalid || !form.dirty || loading()"
+      (click)="save()"
+    >
+      @if (saving()) {
+        <span class="save__content">
+          <mat-spinner diameter="18" class="save__spinner" />
+          Speichern…
+        </span>
+      } @else {
+        <span>Änderungen speichern</span>
+      }
+    </button>
+  </header>
+
+  @if (loading()) {
+    <div class="empty-state" role="status" aria-live="polite">
+      <mat-spinner diameter="32" />
+      <p>Regeln werden geladen…</p>
+    </div>
+  } @else {
+    <form [formGroup]="form" class="cards" novalidate>
+      <section class="card">
+        <header class="card__header">
+          <mat-icon fontSet="material-symbols-outlined">event_upcoming</mat-icon>
+          <h2>Max. Tage im Voraus</h2>
+        </header>
+        <p class="card__description">
+          Bestimmt den Zeitraum, in dem Mitglieder bereits Plätze für die
+          Zukunft reservieren können.
+        </p>
+        <mat-form-field appearance="outline">
+          <mat-label>Tage</mat-label>
+          <input
+            matInput
+            type="number"
+            min="1"
+            max="365"
+            formControlName="maxAdvanceBookingDays"
+          />
+          <span matTextSuffix>Tage</span>
+          @if (form.controls.maxAdvanceBookingDays.hasError('min')
+            || form.controls.maxAdvanceBookingDays.hasError('max')) {
+            <mat-error>Zwischen 1 und 365 Tagen.</mat-error>
+          }
+        </mat-form-field>
+        <p class="card__example">
+          <mat-icon fontSet="material-symbols-outlined">info</mat-icon>
+          Beispiel: „7" bedeutet, Mitglieder können am Montag bis zum
+          nächsten Montag reservieren.
+        </p>
+      </section>
+
+      <section class="card">
+        <header class="card__header">
+          <mat-icon fontSet="material-symbols-outlined">timer_off</mat-icon>
+          <h2>Mindeststornofrist</h2>
+        </header>
+        <p class="card__description">
+          Zeitraum vor Spielbeginn, in dem eine kostenfreie Stornierung
+          möglich ist. „0" erlaubt Stornierung bis zum Start.
+        </p>
+        <mat-form-field appearance="outline">
+          <mat-label>Stunden</mat-label>
+          <input
+            matInput
+            type="number"
+            min="0"
+            max="168"
+            formControlName="minCancellationHours"
+          />
+          <span matTextSuffix>Stunden</span>
+          @if (form.controls.minCancellationHours.hasError('min')
+            || form.controls.minCancellationHours.hasError('max')) {
+            <mat-error>Zwischen 0 und 168 Stunden.</mat-error>
+          }
+        </mat-form-field>
+        <p class="card__example">
+          <mat-icon fontSet="material-symbols-outlined">info</mat-icon>
+          Beispiel: „2" → Slot um 18:00 Uhr ist bis spätestens 16:00 Uhr stornierbar.
+        </p>
+      </section>
+
+      <section class="card">
+        <header class="card__header">
+          <mat-icon fontSet="material-symbols-outlined">layers</mat-icon>
+          <h2>Max. gleichzeitige Buchungen</h2>
+        </header>
+        <p class="card__description">
+          Begrenzt die Anzahl aktiver zukünftiger Reservierungen je
+          Mitglied.
+        </p>
+        <mat-form-field appearance="outline">
+          <mat-label>Reservierungen</mat-label>
+          <input
+            matInput
+            type="number"
+            min="1"
+            max="20"
+            formControlName="maxOpenReservationsPerMember"
+          />
+          <span matTextSuffix>Reservierungen</span>
+          @if (form.controls.maxOpenReservationsPerMember.hasError('min')
+            || form.controls.maxOpenReservationsPerMember.hasError('max')) {
+            <mat-error>Zwischen 1 und 20.</mat-error>
+          }
+        </mat-form-field>
+        <p class="card__example">
+          <mat-icon fontSet="material-symbols-outlined">info</mat-icon>
+          Beispiel: „2" → Mitglied mit 2 offenen Reservierungen muss erst
+          eine nutzen oder stornieren, bevor eine neue möglich ist.
+        </p>
+      </section>
+    </form>
+
+    @if (errorMessage(); as msg) {
+      <div class="error-banner" role="alert">
+        <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
+        <div class="error-banner__body">
+          <span>{{ msg }}</span>
+          @if (failures().length > 0) {
+            <ul>
+              @for (f of failures(); track f.code) {
+                <li>{{ f.message }}</li>
+              }
+            </ul>
+          }
+        </div>
+      </div>
+    }
+
+    <p class="hint">
+      <mat-icon fontSet="material-symbols-outlined">info</mat-icon>
+      Änderungen wirken ab sofort für neue Buchungen. Bestehende
+      Buchungen bleiben unberührt.
+    </p>
+  }
+</section>

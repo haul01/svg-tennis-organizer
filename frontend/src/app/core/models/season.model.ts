@@ -7,3 +7,12 @@ export interface SeasonDto {
   closingTime: string;
   slotDurationMinutes: number;
 }
+
+export interface UpdateSeasonRequest {
+  name: string;
+  startDate: string;        // "YYYY-MM-DD"
+  endDate: string;
+  openingTime: string;      // "HH:mm:ss"
+  closingTime: string;
+  slotDurationMinutes: number;
+}

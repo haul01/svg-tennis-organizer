@@ -1,0 +1,81 @@
+<section class="page">
+  <header class="page__header">
+    <div>
+      <span class="page__kicker">ADMINISTRATION</span>
+      <h1>Plätze</h1>
+      <p class="page__subtitle">
+        Lege Plätze an, benenne sie um oder deaktiviere sie, wenn sie nicht
+        mehr buchbar sein sollen. Inaktive Plätze bleiben für die Historie
+        erhalten.
+      </p>
+    </div>
+    <button mat-flat-button class="cta" (click)="openCreate()">
+      <mat-icon fontSet="material-symbols-outlined">add</mat-icon>
+      Neuer Platz
+    </button>
+  </header>
+
+  @if (loading()) {
+    <div class="empty-state" role="status" aria-live="polite">
+      <mat-spinner diameter="32" />
+      <p>Plätze werden geladen…</p>
+    </div>
+  } @else if (courts().length === 0) {
+    <div class="empty-state">
+      <mat-icon fontSet="material-symbols-outlined">sports_tennis</mat-icon>
+      <p>Noch keine Plätze. Leg oben rechts einen an.</p>
+    </div>
+  } @else {
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Reihenfolge</th>
+            <th scope="col">Name</th>
+            <th scope="col">Status</th>
+            <th scope="col" class="actions-col">Aktionen</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of courts(); track c.id) {
+            <tr>
+              <td><span class="pill">#{{ c.displayOrder }}</span></td>
+              <td>{{ c.name }}</td>
+              <td>
+                <span
+                  class="status"
+                  [class.status--active]="c.isActive"
+                  [class.status--inactive]="!c.isActive"
+                >
+                  <span class="dot" aria-hidden="true"></span>
+                  {{ c.isActive ? 'Aktiv' : 'Inaktiv' }}
+                </span>
+              </td>
+              <td class="actions-col">
+                <button
+                  mat-icon-button
+                  type="button"
+                  aria-label="Bearbeiten"
+                  (click)="openEdit(c)"
+                >
+                  <mat-icon fontSet="material-symbols-outlined">edit</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  type="button"
+                  [attr.aria-label]="c.isActive ? 'Deaktivieren' : 'Aktivieren'"
+                  [disabled]="toggling() === c.id"
+                  (click)="toggleActive(c)"
+                >
+                  <mat-icon fontSet="material-symbols-outlined">
+                    {{ c.isActive ? 'block' : 'check_circle' }}
+                  </mat-icon>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

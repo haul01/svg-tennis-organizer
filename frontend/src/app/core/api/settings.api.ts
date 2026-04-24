@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { PublicSettingsDto } from '../models/settings.model';
+import { PublicSettingsDto, UpdateSettingsRequest } from '../models/settings.model';
 
 @Injectable({ providedIn: 'root' })
 export class SettingsApi {
@@ -12,5 +12,9 @@ export class SettingsApi {
 
   getPublic(): Observable<PublicSettingsDto> {
     return this.http.get<PublicSettingsDto>(`${this.baseUrl}/public`);
+  }
+
+  update(req: UpdateSettingsRequest): Observable<PublicSettingsDto> {
+    return this.http.put<PublicSettingsDto>(this.baseUrl, req);
   }
 }

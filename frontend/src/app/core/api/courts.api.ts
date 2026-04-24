@@ -3,7 +3,11 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { CourtDto } from '../models/court.model';
+import {
+  CourtDto,
+  CreateCourtRequest,
+  UpdateCourtRequest
+} from '../models/court.model';
 
 @Injectable({ providedIn: 'root' })
 export class CourtsApi {
@@ -14,5 +18,13 @@ export class CourtsApi {
     let params = new HttpParams();
     if (includeInactive) params = params.set('includeInactive', 'true');
     return this.http.get<CourtDto[]>(this.baseUrl, { params });
+  }
+
+  create(req: CreateCourtRequest): Observable<CourtDto> {
+    return this.http.post<CourtDto>(this.baseUrl, req);
+  }
+
+  update(id: number, req: UpdateCourtRequest): Observable<CourtDto> {
+    return this.http.put<CourtDto>(`${this.baseUrl}/${id}`, req);
   }
 }
