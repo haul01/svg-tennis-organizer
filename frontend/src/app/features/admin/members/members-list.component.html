@@ -1,0 +1,130 @@
+<section class="page">
+  <header class="page__header">
+    <div>
+      <span class="page__kicker">ADMINISTRATION</span>
+      <h1>Mitglieder</h1>
+      <p class="page__subtitle">Verwalte Profile und Status aller Clubmitglieder.</p>
+    </div>
+    <button mat-flat-button class="cta" (click)="openCreate()">
+      <mat-icon fontSet="material-symbols-outlined">person_add</mat-icon>
+      Neues Mitglied
+    </button>
+  </header>
+
+  <div class="toolbar">
+    <mat-form-field appearance="outline" class="search">
+      <mat-icon matIconPrefix fontSet="material-symbols-outlined">search</mat-icon>
+      <mat-label>Mitglieder suchen</mat-label>
+      <input matInput type="search" [formControl]="searchControl" autocomplete="off" />
+    </mat-form-field>
+
+    <div class="pills" role="tablist" aria-label="Status-Filter">
+      <button
+        type="button"
+        class="pill"
+        [class.pill--active]="status() === 'all'"
+        (click)="setStatus('all')"
+      >Alle · {{ counts().all }}</button>
+      <button
+        type="button"
+        class="pill"
+        [class.pill--active]="status() === 'active'"
+        (click)="setStatus('active')"
+      >Aktiv · {{ counts().active }}</button>
+      <button
+        type="button"
+        class="pill"
+        [class.pill--active]="status() === 'inactive'"
+        (click)="setStatus('inactive')"
+      >Inaktiv · {{ counts().inactive }}</button>
+    </div>
+
+    <div class="pills pills--roles" role="group" aria-label="Rollen-Filter">
+      <button
+        type="button"
+        class="pill pill--ghost"
+        [class.pill--active]="roleFilter() === null"
+        (click)="setRole(null)"
+      >Alle Rollen</button>
+      @for (r of availableRoles; track r) {
+        <button
+          type="button"
+          class="pill pill--ghost"
+          [class.pill--active]="roleFilter() === r"
+          (click)="setRole(r)"
+        >{{ r }}</button>
+      }
+    </div>
+  </div>
+
+  @if (loading() && members().length === 0) {
+    <div class="empty-state" role="status" aria-live="polite">
+      <mat-spinner diameter="32" />
+      <p>Mitglieder werden geladen…</p>
+    </div>
+  } @else if (members().length === 0) {
+    <div class="empty-state">
+      <mat-icon fontSet="material-symbols-outlined">group_off</mat-icon>
+      <p>Keine Mitglieder gefunden.</p>
+    </div>
+  } @else {
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">E-Mail</th>
+            <th scope="col">Rolle</th>
+            <th scope="col">Status</th>
+            <th scope="col" class="actions-col">Aktionen</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (m of members(); track m.id) {
+            <tr>
+              <td>
+                <div class="member">
+                  <span class="avatar" aria-hidden="true">{{ initials(m) }}</span>
+                  <a [routerLink]="['/admin/members', m.id]" class="member__name">
+                    {{ m.firstName }} {{ m.lastName }}
+                  </a>
+                </div>
+              </td>
+              <td>{{ m.email }}</td>
+              <td><span class="role-pill">{{ m.role }}</span></td>
+              <td>
+                <span
+                  class="status"
+                  [class.status--active]="m.isActive"
+                  [class.status--inactive]="!m.isActive"
+                >
+                  <span class="dot" aria-hidden="true"></span>
+                  {{ m.isActive ? 'Aktiv' : 'Inaktiv' }}
+                </span>
+              </td>
+              <td class="actions-col">
+                <a
+                  mat-icon-button
+                  [routerLink]="['/admin/members', m.id]"
+                  aria-label="Bearbeiten"
+                >
+                  <mat-icon fontSet="material-symbols-outlined">edit</mat-icon>
+                </a>
+                <button
+                  mat-icon-button
+                  type="button"
+                  [attr.aria-label]="m.isActive ? 'Deaktivieren' : 'Aktivieren'"
+                  (click)="toggleActive(m)"
+                >
+                  <mat-icon fontSet="material-symbols-outlined">
+                    {{ m.isActive ? 'person_remove' : 'person_add' }}
+                  </mat-icon>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

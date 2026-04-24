@@ -17,6 +17,12 @@ using TennisClub.Api.Features.Auth.Shared;
 using TennisClub.Api.Features.Courts.List;
 using TennisClub.Api.Features.GuestPlayers.Create;
 using TennisClub.Api.Features.GuestPlayers.ListForMember;
+using TennisClub.Api.Features.Members.Create;
+using TennisClub.Api.Features.Members.Get;
+using TennisClub.Api.Features.Members.List;
+using TennisClub.Api.Features.Members.SetActive;
+using TennisClub.Api.Features.Members.TriggerPasswordReset;
+using TennisClub.Api.Features.Members.Update;
 using TennisClub.Api.Features.Profile.ChangePassword;
 using TennisClub.Api.Features.Profile.Get;
 using TennisClub.Api.Features.Profile.Update;
@@ -136,6 +142,12 @@ builder.Services.AddScoped<GetPublicSettingsHandler>();
 builder.Services.AddScoped<GetProfileHandler>();
 builder.Services.AddScoped<UpdateProfileHandler>();
 builder.Services.AddScoped<ChangePasswordHandler>();
+builder.Services.AddScoped<ListMembersHandler>();
+builder.Services.AddScoped<GetMemberHandler>();
+builder.Services.AddScoped<CreateMemberHandler>();
+builder.Services.AddScoped<UpdateMemberHandler>();
+builder.Services.AddScoped<SetActiveHandler>();
+builder.Services.AddScoped<TriggerPasswordResetHandler>();
 
 // Booking rule engine + all nine rules.
 builder.Services.AddBookingRules();

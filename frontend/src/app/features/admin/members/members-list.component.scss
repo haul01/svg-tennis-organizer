@@ -1,0 +1,200 @@
+@use '../../../../styles/tokens' as *;
+
+:host { display: block; }
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tc-space-md);
+  max-width: 1200px;
+  margin-inline: auto;
+
+  &__header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--tc-space-md);
+    flex-wrap: wrap;
+  }
+
+  &__kicker {
+    @include tc-label-bold;
+    color: var(--tc-on-surface-variant);
+    text-transform: uppercase;
+  }
+
+  h1 {
+    @include tc-headline-lg;
+    margin: var(--tc-space-base) 0 0;
+    color: var(--tc-on-surface);
+  }
+
+  &__subtitle {
+    @include tc-body-md;
+    margin: var(--tc-space-base) 0 0;
+    color: var(--tc-on-surface-variant);
+  }
+}
+
+.cta {
+  background: var(--tc-tennis-green);
+  color: var(--tc-deep-navy);
+  font-weight: 600;
+
+  &:hover:not([disabled]) {
+    background: #a9e51d;
+  }
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tc-space-md);
+}
+
+.search {
+  flex: 1;
+  min-width: 240px;
+}
+
+.pills {
+  display: inline-flex;
+  gap: var(--tc-space-xs);
+
+  &--roles { flex-wrap: wrap; }
+}
+
+.pill {
+  @include tc-label-sm;
+  padding: var(--tc-space-xs) var(--tc-space-sm);
+  border: 1px solid var(--tc-outline-variant);
+  border-radius: var(--tc-radius-full);
+  background: var(--tc-surface-container-lowest);
+  color: var(--tc-on-surface-variant);
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
+
+  &--ghost { background: transparent; }
+
+  &:hover { border-color: var(--tc-on-surface-variant); }
+
+  &--active {
+    background: var(--tc-deep-navy);
+    border-color: var(--tc-deep-navy);
+    color: var(--tc-surface-container-lowest);
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--tc-space-sm);
+  padding: var(--tc-space-xl);
+  text-align: center;
+  background: var(--tc-surface-container-lowest);
+  border: 1px dashed var(--tc-outline-variant);
+  border-radius: var(--tc-radius-xl);
+  color: var(--tc-on-surface-variant);
+
+  mat-icon { font-size: 40px; width: 40px; height: 40px; }
+  p { @include tc-body-md; margin: 0; }
+}
+
+.table-card {
+  background: var(--tc-surface-container-lowest);
+  border: 1px solid var(--tc-outline-variant);
+  border-radius: var(--tc-radius-xl);
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: var(--tc-surface-container-low);
+  th {
+    @include tc-label-bold;
+    text-align: left;
+    padding: var(--tc-space-sm) var(--tc-space-md);
+    color: var(--tc-on-surface-variant);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+  }
+}
+
+tbody td {
+  @include tc-body-md;
+  padding: var(--tc-space-sm) var(--tc-space-md);
+  border-top: 1px solid var(--tc-outline-variant);
+  color: var(--tc-on-surface);
+}
+
+.member {
+  display: flex;
+  align-items: center;
+  gap: var(--tc-space-sm);
+
+  &__name {
+    color: var(--tc-on-surface);
+    font-weight: 500;
+    text-decoration: none;
+
+    &:hover { color: var(--tc-deep-navy); text-decoration: underline; }
+  }
+}
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--tc-surface-container);
+  @include tc-label-bold;
+  color: var(--tc-on-surface-variant);
+  text-transform: uppercase;
+}
+
+.role-pill {
+  @include tc-label-sm;
+  padding: 2px var(--tc-space-xs);
+  border-radius: var(--tc-radius-full);
+  background: var(--tc-surface-container);
+  color: var(--tc-on-surface-variant);
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tc-space-base);
+  @include tc-label-sm;
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--tc-outline);
+  }
+
+  &--active {
+    color: #1b7a1b;
+    .dot { background: #22c55e; }
+  }
+
+  &--inactive {
+    color: var(--tc-on-surface-variant);
+    .dot { background: var(--tc-outline); }
+  }
+}
+
+.actions-col {
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
+}

@@ -1,0 +1,87 @@
+<h2 mat-dialog-title>Neues Mitglied</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="row">
+      <mat-form-field appearance="outline" class="field">
+        <mat-label>Vorname</mat-label>
+        <input matInput type="text" formControlName="firstName" required />
+        @if (form.controls.firstName.touched
+          && form.controls.firstName.hasError('required')) {
+          <mat-error>Vorname ist erforderlich.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="field">
+        <mat-label>Nachname</mat-label>
+        <input matInput type="text" formControlName="lastName" required />
+        @if (form.controls.lastName.touched
+          && form.controls.lastName.hasError('required')) {
+          <mat-error>Nachname ist erforderlich.</mat-error>
+        }
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" class="field">
+      <mat-label>E-Mail</mat-label>
+      <input matInput type="email" formControlName="email" autocomplete="off" required />
+      @if (form.controls.email.touched
+        && form.controls.email.hasError('email')) {
+        <mat-error>Bitte eine gültige E-Mail eingeben.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="field">
+      <mat-label>Rolle</mat-label>
+      <mat-select formControlName="role" required>
+        @for (r of availableRoles; track r) {
+          <mat-option [value]="r">{{ r }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </form>
+
+  <p class="hint">
+    <mat-icon fontSet="material-symbols-outlined">info</mat-icon>
+    Nach dem Anlegen erhält das Mitglied automatisch eine Mail mit dem
+    Passwort-Setzen-Link.
+  </p>
+
+  @if (errorMessage(); as msg) {
+    <div class="error-banner" role="alert">
+      <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
+      <div class="error-banner__body">
+        <span>{{ msg }}</span>
+        @if (failures().length > 0) {
+          <ul>
+            @for (f of failures(); track f.code) {
+              <li>{{ f.message }}</li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button type="button" (click)="cancel()" [disabled]="submitting()">
+    Abbrechen
+  </button>
+  <button
+    mat-flat-button
+    type="button"
+    class="submit"
+    [disabled]="submitting()"
+    (click)="submit()"
+  >
+    @if (submitting()) {
+      <span class="submit__content">
+        <mat-spinner diameter="18" class="submit__spinner" />
+        Wird angelegt…
+      </span>
+    } @else {
+      <span>Mitglied anlegen</span>
+    }
+  </button>
+</mat-dialog-actions>

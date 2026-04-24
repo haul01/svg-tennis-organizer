@@ -1,0 +1,137 @@
+<section class="page">
+  <button mat-button type="button" class="back" (click)="back()">
+    <mat-icon fontSet="material-symbols-outlined">arrow_back</mat-icon>
+    Zurück zur Liste
+  </button>
+
+  @if (loading()) {
+    <div class="empty-state" role="status" aria-live="polite">
+      <mat-spinner diameter="32" />
+      <p>Mitglied wird geladen…</p>
+    </div>
+  } @else if (member(); as m) {
+    <header class="page__header">
+      <div>
+        <span class="page__kicker">MITGLIED</span>
+        <h1>{{ m.firstName }} {{ m.lastName }}</h1>
+      </div>
+      <div class="status-toggle">
+        <mat-slide-toggle
+          color="primary"
+          [checked]="m.isActive"
+          (change)="toggleActive($event.checked)"
+        >
+          {{ m.isActive ? 'Aktiv' : 'Inaktiv' }}
+        </mat-slide-toggle>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="card" aria-labelledby="data-heading">
+        <header class="card__header">
+          <h2 id="data-heading">Stammdaten</h2>
+        </header>
+
+        <form [formGroup]="form" (ngSubmit)="save()" novalidate class="form">
+          <div class="row">
+            <mat-form-field appearance="outline">
+              <mat-label>Vorname</mat-label>
+              <input matInput type="text" formControlName="firstName" required />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Nachname</mat-label>
+              <input matInput type="text" formControlName="lastName" required />
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline">
+            <mat-label>E-Mail</mat-label>
+            <input matInput type="email" formControlName="email" required />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Rolle</mat-label>
+            <mat-select formControlName="role" required>
+              @for (r of availableRoles; track r) {
+                <mat-option [value]="r">{{ r }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          @if (errorMessage(); as msg) {
+            <div class="error-banner" role="alert">
+              <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
+              <div class="error-banner__body">
+                <span>{{ msg }}</span>
+                @if (failures().length > 0) {
+                  <ul>
+                    @for (f of failures(); track f.code) {
+                      <li>{{ f.message }}</li>
+                    }
+                  </ul>
+                }
+              </div>
+            </div>
+          }
+
+          <div class="actions">
+            <button
+              mat-flat-button
+              type="submit"
+              class="save"
+              [disabled]="saving() || form.invalid || !form.dirty"
+            >
+              @if (saving()) {
+                <span class="save__content">
+                  <mat-spinner diameter="18" class="save__spinner" />
+                  Speichern…
+                </span>
+              } @else {
+                <span>Änderungen speichern</span>
+              }
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <aside class="card card--danger" aria-labelledby="danger-heading">
+        <header class="card__header">
+          <mat-icon fontSet="material-symbols-outlined">warning</mat-icon>
+          <h2 id="danger-heading">Gefährliche Aktionen</h2>
+        </header>
+        <p>
+          Diese Aktionen können nicht rückgängig gemacht werden bzw. senden
+          eine E-Mail an das Mitglied.
+        </p>
+
+        <button
+          mat-stroked-button
+          type="button"
+          class="full"
+          (click)="triggerPasswordReset()"
+          [disabled]="!m.isActive"
+        >
+          <mat-icon fontSet="material-symbols-outlined">key</mat-icon>
+          Passwort zurücksetzen
+        </button>
+
+        <button
+          mat-flat-button
+          type="button"
+          class="full danger"
+          (click)="toggleActive(!m.isActive)"
+        >
+          {{ m.isActive ? 'Mitglied deaktivieren' : 'Mitglied aktivieren' }}
+        </button>
+
+        <p class="meta">Mitglied seit {{ createdAtLabel() }}</p>
+      </aside>
+    </div>
+  } @else {
+    <div class="empty-state">
+      <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
+      <p>Mitglied nicht gefunden.</p>
+    </div>
+  }
+</section>
