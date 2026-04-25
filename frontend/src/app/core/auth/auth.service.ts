@@ -30,6 +30,12 @@ export class AuthService {
     );
   }
 
+  resetPassword(email: string, token: string, newPassword: string): Observable<void> {
+    return this.http
+      .post<void>(`${this.baseUrl}/reset-password`, { email, token, newPassword })
+      .pipe(map(() => void 0));
+  }
+
   refresh(): Observable<string> {
     const token = localStorage.getItem(REFRESH_KEY);
     if (!token) return throwError(() => new Error('no_refresh_token'));

@@ -9,5 +9,9 @@ export const authRoutes: Routes = [
     loadComponent: () => import('./login/login.component').then(m => m.LoginComponent)
   },
   { path: 'forgot-password', component: PlaceholderComponent, title: 'Passwort vergessen' },
-  { path: 'set-password', component: PlaceholderComponent, title: 'Passwort setzen' }
+  {
+    path: 'set-password',
+    title: 'Passwort setzen',
+    loadComponent: () => import('./set-password/set-password.component').then(m => m.SetPasswordComponent)
+  }
 ];
