@@ -38,6 +38,8 @@ CLAUDE.local.md
 **/.azure/
 *.mdf
 *.ldf
+# Federated-credential payload from one-off `az ad app federated-credential create`
+cred.json
 
 # Design working files
 design/.exports/
