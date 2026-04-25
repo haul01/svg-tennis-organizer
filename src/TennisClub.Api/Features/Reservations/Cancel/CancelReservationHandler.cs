@@ -1,11 +1,18 @@
 using Microsoft.EntityFrameworkCore;
 using TennisClub.Api.Common.Results;
+using TennisClub.Api.Common.Time;
+using TennisClub.Api.Domain.Entities;
 using TennisClub.Api.Domain.Enums;
+using TennisClub.Api.Infrastructure.Email;
 using TennisClub.Api.Infrastructure.Persistence;
 
 namespace TennisClub.Api.Features.Reservations.Cancel;
 
-public sealed class CancelReservationHandler(AppDbContext db, TimeProvider time)
+public sealed class CancelReservationHandler(
+    AppDbContext db,
+    EmailQueue email,
+    EmailTemplateRenderer templates,
+    TimeProvider time)
 {
     public async Task<Result> HandleAsync(
         Guid reservationId,
@@ -38,11 +45,45 @@ public sealed class CancelReservationHandler(AppDbContext db, TimeProvider time)
         try
         {
             await db.SaveChangesAsync(ct);
-            return Result.Success();
         }
         catch (DbUpdateConcurrencyException)
         {
             return Result.Conflict("Die Buchung wurde inzwischen geändert, bitte neu laden.");
         }
+
+        // Best-effort: a mail-pipeline hiccup must not undo a successful cancel.
+        try { await SendCancellationAsync(reservation, ct); }
+        catch { /* swallowed on purpose */ }
+
+        return Result.Success();
+    }
+
+    private async Task SendCancellationAsync(Reservation r, CancellationToken ct)
+    {
+        var ctx = await db.Reservations
+            .AsNoTracking()
+            .Where(x => x.Id == r.Id)
+            .Select(x => new
+            {
+                x.Member.Email,
+                x.Member.FirstName,
+                CourtName = x.Court.Name
+            })
+            .FirstAsync(ct);
+
+        var localStart = ClubTimeZone.LocalDateTime(r.StartsAt);
+        var localEnd = ClubTimeZone.LocalDateTime(r.EndsAt);
+
+        var html = await templates.RenderAsync("booking-cancellation", new
+        {
+            FirstName = ctx.FirstName,
+            CourtName = ctx.CourtName,
+            DateLabel = localStart.ToString("dddd, d. MMMM yyyy",
+                System.Globalization.CultureInfo.GetCultureInfo("de-AT")),
+            TimeLabel = $"{localStart:HH:mm} – {localEnd:HH:mm} Uhr"
+        }, ct);
+
+        await email.EnqueueAsync(
+            new EmailMessage(ctx.Email!, "Stornierungsbestätigung", html), ct);
     }
 }

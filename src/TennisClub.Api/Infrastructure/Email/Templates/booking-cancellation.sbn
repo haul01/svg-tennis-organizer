@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="de">
+<head><meta charset="UTF-8"></head>
+<body style="font-family: Arial, sans-serif; color: #0b1c30; line-height: 1.6;">
+  <h1 style="color: #0a192f;">Stornierungsbestätigung</h1>
+
+  <p>Hallo {{ first_name }},</p>
+
+  <p>deine Reservierung wurde storniert:</p>
+
+  <table style="border-collapse: collapse; margin: 20px 0;">
+    <tr>
+      <td style="padding: 8px 16px 8px 0;"><strong>Platz:</strong></td>
+      <td style="padding: 8px 0;">{{ court_name }}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 16px 8px 0;"><strong>Datum:</strong></td>
+      <td style="padding: 8px 0;">{{ date_label }}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 16px 8px 0;"><strong>Uhrzeit:</strong></td>
+      <td style="padding: 8px 0;">{{ time_label }}</td>
+    </tr>
+  </table>
+
+  <p>Der Slot wurde wieder freigegeben und steht anderen Mitgliedern zur
+     Verfügung.</p>
+
+  <p style="margin-top: 32px;">Sportliche Grüße<br>Dein TennisClub</p>
+</body>
+</html>

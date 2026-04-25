@@ -12,7 +12,8 @@ namespace TennisClub.Api.Features.Members.Create;
 
 public sealed class CreateMemberHandler(
     UserManager<Member> users,
-    IEmailSender email,
+    EmailQueue email,
+    EmailTemplateRenderer templates,
     IOptions<FrontendSettings> frontend,
     TimeProvider time)
 {
@@ -50,18 +51,20 @@ public sealed class CreateMemberHandler(
         var setPasswordUrl = $"{frontend.Value.BaseUrl.TrimEnd('/')}" +
                              $"/set-password?email={encodedEmail}&token={encodedToken}";
 
-        var html = $"""
-            <p>Hallo {member.FirstName},</p>
-            <p>ein Administrator hat ein Konto für dich im TennisClub angelegt.</p>
-            <p>Klicke den folgenden Link, um dein Passwort zu setzen und dich zum ersten Mal anzumelden:</p>
-            <p><a href="{setPasswordUrl}">Passwort setzen und einloggen</a></p>
-            <p>Der Link ist 24 Stunden gültig. Falls du kein Konto bei uns erwartet hast,
-            ignoriere diese Nachricht.</p>
-            """;
+        // Best-effort: a failed mail must not undo the member creation.
+        try
+        {
+            var html = await templates.RenderAsync("welcome", new
+            {
+                FirstName = member.FirstName,
+                SetPasswordUrl = setPasswordUrl
+            }, ct);
 
-        await email.SendAsync(
-            new EmailMessage(member.Email!, "Willkommen im TennisClub", html),
-            ct);
+            await email.EnqueueAsync(
+                new EmailMessage(member.Email!, "Willkommen im TennisClub", html),
+                ct);
+        }
+        catch { /* dispatcher logs the failure */ }
 
         return Result.Success(new MemberDetailDto(
             member.Id, member.Email!, member.FirstName, member.LastName,

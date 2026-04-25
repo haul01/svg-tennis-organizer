@@ -27,4 +27,13 @@
     <ProjectReference Include="..\..\src\TennisClub.Api\TennisClub.Api.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Mirror the API's template tree into the test output so the renderer
+         can find them when handlers are exercised in unit tests. -->
+    <Content Include="..\..\src\TennisClub.Api\Infrastructure\Email\Templates\*.sbn">
+      <Link>Infrastructure\Email\Templates\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
 using TennisClub.Api.Domain.Entities;
 using TennisClub.Api.Domain.Enums;
+using TennisClub.Api.Infrastructure.Email;
 using TennisClub.Api.Infrastructure.Persistence;
 
 namespace TennisClub.Api.Tests.TestInfrastructure;
@@ -16,6 +17,11 @@ public sealed class RuleTestHost : IAsyncDisposable
     private readonly SqliteConnection _connection;
     public AppDbContext Db { get; }
     public FakeTimeProvider Time { get; }
+    /// <summary>Real queue, no dispatcher — messages just pile up.</summary>
+    public EmailQueue Email { get; } = new();
+    /// <summary>Real renderer; throws on missing templates which the
+    /// handler-side try/catch swallows. Sufficient for unit tests.</summary>
+    public EmailTemplateRenderer Templates { get; } = new();
 
     public RuleTestHost(DateTimeOffset? now = null)
     {

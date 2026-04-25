@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using TennisClub.Api.Common.Exceptions;
 using TennisClub.Api.Common.Results;
+using TennisClub.Api.Common.Time;
 using TennisClub.Api.Domain.Entities;
 using TennisClub.Api.Domain.Enums;
 using TennisClub.Api.Features.Reservations.Rules;
+using TennisClub.Api.Infrastructure.Email;
 using TennisClub.Api.Infrastructure.Persistence;
 
 namespace TennisClub.Api.Features.Reservations.Create;
@@ -11,6 +13,8 @@ namespace TennisClub.Api.Features.Reservations.Create;
 public sealed class CreateReservationHandler(
     AppDbContext db,
     BookingRuleEngine rules,
+    EmailQueue email,
+    EmailTemplateRenderer templates,
     TimeProvider time)
 {
     public async Task<Result<Guid>> HandleAsync(
@@ -62,12 +66,54 @@ public sealed class CreateReservationHandler(
         try
         {
             await db.SaveChangesAsync(ct);
-            return Result.Success(reservation.Id);
         }
         catch (DbUpdateException ex) when (ex.IsUniqueConstraintViolation())
         {
             return Result.Conflict(
                 "Der Slot wurde gerade von jemand anderem gebucht.");
         }
+
+        // Best-effort: a mail-pipeline hiccup must not roll back a successful
+        // booking. The dispatcher will log render or SMTP failures separately.
+        try { await SendConfirmationAsync(reservation, ct); }
+        catch { /* swallowed on purpose */ }
+
+        return Result.Success(reservation.Id);
+    }
+
+    private async Task SendConfirmationAsync(Reservation r, CancellationToken ct)
+    {
+        // Pull the bits the template needs in a single query so the
+        // confirmation mail keeps a stable shape regardless of caller.
+        var ctx = await db.Reservations
+            .AsNoTracking()
+            .Where(x => x.Id == r.Id)
+            .Select(x => new
+            {
+                x.Member.Email,
+                x.Member.FirstName,
+                CourtName = x.Court.Name,
+                GuestName = x.GuestPlayer != null
+                    ? (x.GuestPlayer.FirstName + " " + x.GuestPlayer.LastName)
+                    : null
+            })
+            .FirstAsync(ct);
+
+        var localStart = ClubTimeZone.LocalDateTime(r.StartsAt);
+        var localEnd = ClubTimeZone.LocalDateTime(r.EndsAt);
+
+        var html = await templates.RenderAsync("booking-confirmation", new
+        {
+            FirstName = ctx.FirstName,
+            CourtName = ctx.CourtName,
+            DateLabel = localStart.ToString("dddd, d. MMMM yyyy",
+                System.Globalization.CultureInfo.GetCultureInfo("de-AT")),
+            TimeLabel = $"{localStart:HH:mm} – {localEnd:HH:mm} Uhr",
+            HasGuest = r.HasGuest,
+            GuestName = ctx.GuestName
+        }, ct);
+
+        await email.EnqueueAsync(
+            new EmailMessage(ctx.Email!, "Buchungsbestätigung", html), ct);
     }
 }

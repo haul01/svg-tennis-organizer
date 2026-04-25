@@ -11,7 +11,8 @@ namespace TennisClub.Api.Features.Members.TriggerPasswordReset;
 
 public sealed class TriggerPasswordResetHandler(
     UserManager<Member> users,
-    IEmailSender email,
+    EmailQueue email,
+    EmailTemplateRenderer templates,
     IOptions<FrontendSettings> frontend)
 {
     public async Task<Result> HandleAsync(Guid id, CancellationToken ct)
@@ -26,16 +27,19 @@ public sealed class TriggerPasswordResetHandler(
         var url = $"{frontend.Value.BaseUrl.TrimEnd('/')}" +
                   $"/set-password?email={encodedEmail}&token={encodedToken}";
 
-        var html = $"""
-            <p>Hallo {user.FirstName},</p>
-            <p>ein Administrator hat einen Passwort-Reset für dein Konto ausgelöst.</p>
-            <p><a href="{url}">Passwort neu setzen</a></p>
-            <p>Der Link ist 24 Stunden gültig. Falls du das nicht erwartet hast,
-            wende dich an den Vereinsvorstand.</p>
-            """;
+        try
+        {
+            var html = await templates.RenderAsync("password-reset", new
+            {
+                FirstName = user.FirstName,
+                ResetUrl = url,
+                TriggeredByAdmin = true
+            }, ct);
 
-        await email.SendAsync(
-            new EmailMessage(user.Email!, "Passwort zurücksetzen", html), ct);
+            await email.EnqueueAsync(
+                new EmailMessage(user.Email!, "Passwort zurücksetzen", html), ct);
+        }
+        catch { /* dispatcher logs the failure */ }
 
         return Result.Success();
     }

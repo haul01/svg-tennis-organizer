@@ -26,7 +26,7 @@ public class CancelReservationHandlerTests
         var member = host.AddMember();
         var r = host.AddReservation(1, member.Id,
             Now.AddDays(1), Now.AddDays(1).AddHours(1));
-        var handler = new CancelReservationHandler(host.Db, host.Time);
+        var handler = new CancelReservationHandler(host.Db, host.Email, host.Templates, host.Time);
 
         var result = await handler.HandleAsync(r.Id, member.Id, r.RowVersion, CancellationToken.None);
 
@@ -45,7 +45,7 @@ public class CancelReservationHandlerTests
         var intruder = host.AddMember();
         var r = host.AddReservation(1, owner.Id,
             Now.AddDays(1), Now.AddDays(1).AddHours(1));
-        var handler = new CancelReservationHandler(host.Db, host.Time);
+        var handler = new CancelReservationHandler(host.Db, host.Email, host.Templates, host.Time);
 
         var result = await handler.HandleAsync(r.Id, intruder.Id, r.RowVersion, CancellationToken.None);
 
@@ -57,7 +57,7 @@ public class CancelReservationHandlerTests
     {
         await using var host = NewHost();
         var member = host.AddMember();
-        var handler = new CancelReservationHandler(host.Db, host.Time);
+        var handler = new CancelReservationHandler(host.Db, host.Email, host.Templates, host.Time);
 
         var result = await handler.HandleAsync(
             Guid.NewGuid(), member.Id, [0], CancellationToken.None);
@@ -73,7 +73,7 @@ public class CancelReservationHandlerTests
         var r = host.AddReservation(1, member.Id,
             Now.AddDays(1), Now.AddDays(1).AddHours(1),
             status: ReservationStatus.Cancelled);
-        var handler = new CancelReservationHandler(host.Db, host.Time);
+        var handler = new CancelReservationHandler(host.Db, host.Email, host.Templates, host.Time);
 
         var result = await handler.HandleAsync(r.Id, member.Id, r.RowVersion, CancellationToken.None);
 
@@ -89,7 +89,7 @@ public class CancelReservationHandlerTests
         // 30 minutes from now, inside the 2h window.
         var r = host.AddReservation(1, member.Id,
             Now.AddMinutes(30), Now.AddMinutes(90));
-        var handler = new CancelReservationHandler(host.Db, host.Time);
+        var handler = new CancelReservationHandler(host.Db, host.Email, host.Templates, host.Time);
 
         var result = await handler.HandleAsync(r.Id, member.Id, r.RowVersion, CancellationToken.None);
 
@@ -108,7 +108,7 @@ public class CancelReservationHandlerTests
         var member = host.AddMember();
         var r = host.AddReservation(1, member.Id,
             Now.AddDays(1), Now.AddDays(1).AddHours(1));
-        var handler = new CancelReservationHandler(host.Db, host.Time);
+        var handler = new CancelReservationHandler(host.Db, host.Email, host.Templates, host.Time);
 
         var result = await handler.HandleAsync(r.Id, member.Id, [9, 9, 9], CancellationToken.None);
 

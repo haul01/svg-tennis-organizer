@@ -175,8 +175,29 @@ builder.Services.AddBookingRules();
 // FluentValidation - pick up all validators in this assembly.
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
-// Email - placeholder logger until Phase 8 wires up SMTP.
-builder.Services.AddScoped<IEmailSender, LoggingEmailSender>();
+// Email pipeline.
+// - Templates rendered via Scriban once per process (singleton).
+// - Outbound mail flows through an in-memory queue + BackgroundService
+//   so request handlers don't block on SMTP.
+// - When Smtp:Host is configured, the production sender wins; otherwise
+//   the dev logger writes the rendered HTML to the console so the
+//   set-password / reset / confirmation links remain reachable.
+builder.Services.AddSingleton<EmailTemplateRenderer>();
+builder.Services.AddSingleton<EmailQueue>();
+builder.Services.AddHostedService<EmailDispatcher>();
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection(SmtpSettings.SectionName));
+
+var smtpConfigured = builder.Configuration
+    .GetSection(SmtpSettings.SectionName)
+    .Get<SmtpSettings>()?.IsConfigured ?? false;
+if (smtpConfigured)
+{
+    builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+}
+else
+{
+    builder.Services.AddScoped<IEmailSender, LoggingEmailSender>();
+}
 
 // Settings binding.
 builder.Services.Configure<FrontendSettings>(

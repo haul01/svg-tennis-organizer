@@ -75,6 +75,8 @@ public sealed class AuthTestHost : IAsyncDisposable
         services.AddScoped<ForgotPasswordHandler>();
         services.AddScoped<ResetPasswordHandler>();
         services.AddSingleton<IEmailSender>(Emails);
+        services.AddSingleton<EmailQueue>();
+        services.AddSingleton<EmailTemplateRenderer>();
         services.Configure<FrontendSettings>(o => o.BaseUrl = "http://localhost:4200");
 
         Services = services.BuildServiceProvider();

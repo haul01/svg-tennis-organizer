@@ -10,7 +10,8 @@ namespace TennisClub.Api.Features.Auth.ForgotPassword;
 
 public sealed class ForgotPasswordHandler(
     UserManager<Member> users,
-    IEmailSender email,
+    EmailQueue email,
+    EmailTemplateRenderer templates,
     IOptions<FrontendSettings> frontend)
 {
     public async Task HandleAsync(ForgotPasswordRequest req, CancellationToken ct)
@@ -29,16 +30,23 @@ public sealed class ForgotPasswordHandler(
         var resetUrl = $"{frontend.Value.BaseUrl.TrimEnd('/')}" +
                        $"/set-password?email={encodedEmail}&token={encodedToken}";
 
-        var html = $"""
-            <p>Hallo {user.FirstName},</p>
-            <p>klicke den folgenden Link, um dein Passwort zurückzusetzen:</p>
-            <p><a href="{resetUrl}">Passwort setzen</a></p>
-            <p>Der Link ist 24 Stunden gültig. Falls du keinen Reset angefordert hast,
-            ignoriere diese Nachricht.</p>
-            """;
+        try
+        {
+            var html = await templates.RenderAsync("password-reset", new
+            {
+                FirstName = user.FirstName,
+                ResetUrl = resetUrl,
+                TriggeredByAdmin = false
+            }, ct);
 
-        await email.SendAsync(
-            new EmailMessage(user.Email!, "Passwort zurücksetzen", html),
-            ct);
+            await email.EnqueueAsync(
+                new EmailMessage(user.Email!, "Passwort zurücksetzen", html),
+                ct);
+        }
+        catch
+        {
+            // Mail pipeline failures are logged by the dispatcher; the
+            // user-facing endpoint must stay generic for enumeration safety.
+        }
     }
 }
