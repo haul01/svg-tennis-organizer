@@ -1,5 +1,4 @@
 export const environment = {
   production: true,
-  // Swap this for the real Container App host when deploying.
-  apiUrl: 'https://api.tennisclub.at/api'
+  apiUrl: 'https://tennisclub-api.wittypond-0bbaa145.germanywestcentral.azurecontainerapps.io/api'
 };
