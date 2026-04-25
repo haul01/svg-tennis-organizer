@@ -86,11 +86,10 @@ export class SetPasswordComponent {
       },
       error: (err: HttpErrorResponse) => {
         this.submitting.set(false);
-        this.errorMessage.set(
-          err.error?.error
-            ?? err.error?.errors?.[0]?.errorMessage
-            ?? 'Der Link ist ungültig oder abgelaufen. Bitte fordere einen neuen an.'
-        );
+        const fallback = 'Der Link ist ungültig oder abgelaufen. Bitte fordere einen neuen an.';
+        const apiError = err.error?.error as string | undefined;
+        const apiFailures = err.error?.failures as { code: string; message: string }[] | undefined;
+        this.errorMessage.set(apiError ?? apiFailures?.[0]?.message ?? fallback);
       }
     });
   }
