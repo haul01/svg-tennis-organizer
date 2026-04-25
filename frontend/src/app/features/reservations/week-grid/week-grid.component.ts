@@ -11,12 +11,14 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { addDays, format, startOfWeek } from 'date-fns';
+import { addDays, endOfDay, format, startOfDay, startOfWeek } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { firstValueFrom } from 'rxjs';
 
+import { CourtBlocksApi } from '../../../core/api/court-blocks.api';
 import { CourtsApi } from '../../../core/api/courts.api';
 import { SeasonsApi } from '../../../core/api/seasons.api';
+import { CourtBlockDto } from '../../../core/models/court-block.model';
 import { CourtDto } from '../../../core/models/court.model';
 import { SeasonDto } from '../../../core/models/season.model';
 import {
@@ -35,6 +37,7 @@ interface Cell {
   endsAt: Date;
   courtId: number;
   reservation?: WeekReservationDto;
+  blockReason?: string;
 }
 
 @Component({
@@ -48,12 +51,14 @@ export class WeekGridComponent {
   private readonly reservations = inject(ReservationsService);
   private readonly courtsApi = inject(CourtsApi);
   private readonly seasonsApi = inject(SeasonsApi);
+  private readonly blocksApi = inject(CourtBlocksApi);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
 
   // State
   readonly courts = signal<CourtDto[]>([]);
   readonly season = signal<SeasonDto | null>(null);
+  readonly blocks = signal<CourtBlockDto[]>([]);
   readonly bootstrapping = signal(true);
   readonly weekStart = signal<Date>(startOfWeek(new Date(), { weekStartsOn: 1 }));
   readonly selectedDayIndex = signal<number>(todayIndex());
@@ -95,6 +100,18 @@ export class WeekGridComponent {
       byKey.set(keyOf(r.courtId, starts), r);
     }
 
+    // Convert blocks to Date-intervals once; filter by selected day
+    // to keep the per-cell intersection cheap.
+    const dayBlocks = this.blocks()
+      .filter(b => b.courtId !== undefined)
+      .map(b => ({
+        courtId: b.courtId,
+        reason: b.reason,
+        startsAt: new Date(b.startsAt),
+        endsAt: new Date(b.endsAt)
+      }))
+      .filter(b => b.endsAt > startOfDay(day) && b.startsAt < endOfDay(day));
+
     return labels.map(label => {
       const [h, m] = label.split(':').map(Number);
       const rowStart = new Date(day);
@@ -103,12 +120,23 @@ export class WeekGridComponent {
 
       return courts.map<Cell>(court => {
         const reservation = byKey.get(keyOf(court.id, rowStart));
-        let state: CellState;
-        if (reservation) state = reservation.isMine ? 'mine' : 'busy';
-        else if (rowEnd <= now) state = 'past';
-        else state = 'free';
+        const block = dayBlocks.find(b =>
+          b.courtId === court.id && b.startsAt < rowEnd && b.endsAt > rowStart);
 
-        return { state, startsAt: rowStart, endsAt: rowEnd, courtId: court.id, reservation };
+        let state: CellState;
+        let blockReason: string | undefined;
+        if (reservation) {
+          state = reservation.isMine ? 'mine' : 'busy';
+        } else if (block) {
+          state = 'blocked';
+          blockReason = block.reason;
+        } else if (rowEnd <= now) {
+          state = 'past';
+        } else {
+          state = 'free';
+        }
+
+        return { state, startsAt: rowStart, endsAt: rowEnd, courtId: court.id, reservation, blockReason };
       });
     });
   });
@@ -121,7 +149,18 @@ export class WeekGridComponent {
     effect(() => {
       const ws = this.weekStart();
       void this.reservations.loadWeek(ws);
+      void this.loadBlocksForWeek(ws);
     });
+  }
+
+  private async loadBlocksForWeek(weekStart: Date): Promise<void> {
+    try {
+      const blocks = await firstValueFrom(this.blocksApi.forWeek(weekStart));
+      this.blocks.set(blocks);
+    } catch {
+      // Grid still works without blocks; admin screen surfaces errors.
+      this.blocks.set([]);
+    }
   }
 
   dayLabel(date: Date): string {

@@ -1,0 +1,131 @@
+<h2 mat-dialog-title>Neue Platzsperre</h2>
+
+<mat-dialog-content>
+  <div class="mode" role="radiogroup" aria-label="Sperr-Typ">
+    <button
+      type="button"
+      class="mode__pill"
+      [class.mode__pill--active]="mode() === 'once'"
+      (click)="setMode('once')"
+    >Einmalig</button>
+    <button
+      type="button"
+      class="mode__pill"
+      [class.mode__pill--active]="mode() === 'series'"
+      (click)="setMode('series')"
+    >Wöchentlich</button>
+  </div>
+
+  <form [formGroup]="form" novalidate class="form">
+    <mat-form-field appearance="outline" class="field">
+      <mat-label>Platz</mat-label>
+      <mat-select formControlName="courtId" required>
+        @for (c of data.courts; track c.id) {
+          <mat-option [value]="c.id">{{ c.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    @if (mode() === 'once') {
+      <mat-form-field appearance="outline" class="field">
+        <mat-label>Datum</mat-label>
+        <input matInput [matDatepicker]="datePicker" formControlName="date" required />
+        <mat-datepicker-toggle matIconSuffix [for]="datePicker" />
+        <mat-datepicker #datePicker />
+        @if (form.controls.date.touched && form.controls.date.hasError('required')) {
+          <mat-error>Datum ist erforderlich.</mat-error>
+        }
+      </mat-form-field>
+    } @else {
+      <mat-form-field appearance="outline" class="field">
+        <mat-label>Wochentag</mat-label>
+        <mat-select formControlName="weekday" required>
+          @for (w of weekdays; track w.value) {
+            <mat-option [value]="w.value">{{ w.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <div class="row">
+        <mat-form-field appearance="outline">
+          <mat-label>Gültig ab</mat-label>
+          <input matInput [matDatepicker]="rangeStartPicker" formControlName="rangeStart" required />
+          <mat-datepicker-toggle matIconSuffix [for]="rangeStartPicker" />
+          <mat-datepicker #rangeStartPicker />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Gültig bis</mat-label>
+          <input matInput [matDatepicker]="rangeEndPicker" formControlName="rangeEnd" required />
+          <mat-datepicker-toggle matIconSuffix [for]="rangeEndPicker" />
+          <mat-datepicker #rangeEndPicker />
+        </mat-form-field>
+      </div>
+    }
+
+    <div class="row">
+      <mat-form-field appearance="outline">
+        <mat-label>Von</mat-label>
+        <input matInput type="time" formControlName="startTime" required />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Bis</mat-label>
+        <input matInput type="time" formControlName="endTime" required />
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" class="field">
+      <mat-label>Grund</mat-label>
+      <input
+        matInput
+        type="text"
+        formControlName="reason"
+        placeholder="z.B. Training Jugend, Platzpflege, Turnier"
+        maxlength="200"
+        required
+      />
+      @if (form.controls.reason.touched && form.controls.reason.hasError('required')) {
+        <mat-error>Bitte einen Grund angeben.</mat-error>
+      }
+    </mat-form-field>
+  </form>
+
+  @if (errorMessage(); as msg) {
+    <div class="error-banner" role="alert">
+      <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
+      <div class="error-banner__body">
+        <span>{{ msg }}</span>
+        @if (failures().length > 0) {
+          <ul>
+            @for (f of failures(); track f.code) {
+              <li>{{ f.message }}</li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button type="button" (click)="cancel()" [disabled]="submitting()">
+    Abbrechen
+  </button>
+  <button
+    mat-flat-button
+    type="button"
+    class="submit"
+    [disabled]="submitting()"
+    (click)="submit()"
+  >
+    @if (submitting()) {
+      <span class="submit__content">
+        <mat-spinner diameter="18" class="submit__spinner" />
+        Speichern…
+      </span>
+    } @else {
+      <span>Sperre aktivieren</span>
+    }
+  </button>
+</mat-dialog-actions>

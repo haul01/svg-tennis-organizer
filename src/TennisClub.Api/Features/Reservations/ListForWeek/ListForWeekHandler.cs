@@ -9,10 +9,11 @@ public sealed class ListForWeekHandler(AppDbContext db)
     public async Task<IReadOnlyList<WeekReservationDto>> HandleAsync(
         DateTimeOffset weekStart, Guid memberId, CancellationToken ct)
     {
-        // Normalize to a full 7-day window starting at 00:00 on weekStart's date.
-        var from = new DateTimeOffset(weekStart.Year, weekStart.Month, weekStart.Day,
-            0, 0, 0, weekStart.Offset);
-        var to = from.AddDays(7);
+        // weekStart already represents local Monday 00:00 (serialized as UTC
+        // by the client). Rebuilding it from .Year/.Month/.Day loses the
+        // offset and shifts the window by one day for clients east of UTC.
+        var from = weekStart;
+        var to = weekStart.AddDays(7);
 
         var rows = await db.Reservations
             .AsNoTracking()

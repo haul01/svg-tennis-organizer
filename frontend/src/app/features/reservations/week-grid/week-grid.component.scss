@@ -96,6 +96,15 @@
     @include tc-label-sm;
     color: var(--tc-on-surface-variant);
   }
+
+  &__count {
+    margin-left: var(--tc-space-xs);
+    padding: 2px var(--tc-space-xs);
+    border-radius: var(--tc-radius-full);
+    background: var(--tc-surface-container);
+    color: var(--tc-on-surface);
+    @include tc-label-bold;
+  }
 }
 
 .chip {
@@ -242,6 +251,15 @@
       rgba(117, 119, 126, 0.25) 6px,
       rgba(117, 119, 126, 0.25) 12px
     );
+
+    .cell__label--blocked {
+      padding: 2px var(--tc-space-xs);
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: var(--tc-radius-sm);
+      color: var(--tc-on-surface);
+      opacity: 1;
+      font-weight: 600;
+    }
   }
 
   &--past {

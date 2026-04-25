@@ -29,7 +29,12 @@ export const adminRoutes: Routes = [
         loadComponent: () =>
           import('./courts/courts-admin.component').then(m => m.CourtsAdminComponent)
       },
-      { path: 'court-blocks', component: PlaceholderComponent, title: 'Platzsperren' },
+      {
+        path: 'court-blocks',
+        title: 'Platzsperren',
+        loadComponent: () =>
+          import('./court-blocks/court-blocks-admin.component').then(m => m.CourtBlocksAdminComponent)
+      },
       {
         path: 'season',
         title: 'Saison',

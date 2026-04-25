@@ -43,7 +43,13 @@
       <li><span class="chip chip--free"></span>Frei</li>
       <li><span class="chip chip--busy"></span>Belegt</li>
       <li><span class="chip chip--mine"></span>Meine Buchung</li>
-      <li><span class="chip chip--blocked"></span>Gesperrt / Training</li>
+      <li>
+        <span class="chip chip--blocked"></span>
+        Gesperrt / Training
+        @if (blocks().length > 0) {
+          <span class="legend__count">{{ blocks().length }} in dieser Woche</span>
+        }
+      </li>
     </ul>
 
     <div class="grid-card">
@@ -87,7 +93,11 @@
                   </span>
                 }
                 @case ('busy') { <span class="cell__label">Belegt</span> }
-                @case ('blocked') { <span class="cell__label">Gesperrt</span> }
+                @case ('blocked') {
+                  <span class="cell__label cell__label--blocked">
+                    {{ cell.blockReason || 'Gesperrt' }}
+                  </span>
+                }
                 @case ('past') { <span class="cell__label"></span> }
                 @default { <span class="cell__label">Frei</span> }
               }

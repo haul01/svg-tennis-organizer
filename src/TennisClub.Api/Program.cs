@@ -17,6 +17,12 @@ using TennisClub.Api.Features.Auth.Shared;
 using TennisClub.Api.Features.Courts.Create;
 using TennisClub.Api.Features.Courts.List;
 using TennisClub.Api.Features.Courts.Update;
+using TennisClub.Api.Features.CourtBlocks.CreateOnce;
+using TennisClub.Api.Features.CourtBlocks.CreateSeries;
+using TennisClub.Api.Features.CourtBlocks.Delete;
+using TennisClub.Api.Features.CourtBlocks.List;
+using TennisClub.Api.Features.CourtBlocks.ListForWeek;
+using TennisClub.Api.Features.CourtBlocks.Shared;
 using TennisClub.Api.Features.GuestPlayers.Create;
 using TennisClub.Api.Features.GuestPlayers.ListForMember;
 using TennisClub.Api.Features.Members.Create;
@@ -156,6 +162,12 @@ builder.Services.AddScoped<UpdateSettingsHandler>();
 builder.Services.AddScoped<UpdateSeasonHandler>();
 builder.Services.AddScoped<CreateCourtHandler>();
 builder.Services.AddScoped<UpdateCourtHandler>();
+builder.Services.AddScoped<BlockConflictChecker>();
+builder.Services.AddScoped<CreateOnceHandler>();
+builder.Services.AddScoped<CreateSeriesHandler>();
+builder.Services.AddScoped<ListBlocksHandler>();
+builder.Services.AddScoped<ListBlocksForWeekHandler>();
+builder.Services.AddScoped<DeleteBlockHandler>();
 
 // Booking rule engine + all nine rules.
 builder.Services.AddBookingRules();

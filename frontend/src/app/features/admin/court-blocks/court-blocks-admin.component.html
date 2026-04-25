@@ -1,0 +1,83 @@
+<section class="page">
+  <header class="page__header">
+    <div>
+      <span class="page__kicker">ADMINISTRATION</span>
+      <h1>Platzsperren</h1>
+      <p class="page__subtitle">
+        Platzsperren aktivieren für einmalige Termine (Turnier, Platzpflege)
+        oder wiederkehrende Serien (Trainer, Jugendtraining).
+      </p>
+    </div>
+    <button mat-flat-button class="cta" (click)="openCreate()" [disabled]="courts().length === 0">
+      <mat-icon fontSet="material-symbols-outlined">add</mat-icon>
+      Neue Sperre
+    </button>
+  </header>
+
+  @if (loading() && rows().length === 0) {
+    <div class="empty-state" role="status" aria-live="polite">
+      <mat-spinner diameter="32" />
+      <p>Sperren werden geladen…</p>
+    </div>
+  } @else if (rows().length === 0) {
+    <div class="empty-state">
+      <mat-icon fontSet="material-symbols-outlined">event_available</mat-icon>
+      <p>Keine aktiven oder künftigen Sperren. Leg oben rechts eine an.</p>
+    </div>
+  } @else {
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Platz</th>
+            <th scope="col">Zeitraum</th>
+            <th scope="col">Frequenz</th>
+            <th scope="col">Grund</th>
+            <th scope="col" class="actions-col">Aktionen</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows(); track row.block.id) {
+            <tr>
+              <td>{{ row.block.courtName }}</td>
+              <td>
+                <div class="date">{{ row.date }}</div>
+                <div class="time">{{ row.timeRange }}</div>
+              </td>
+              <td>
+                @if (row.isSeriesMember) {
+                  <span class="badge badge--series">
+                    Wöchentlich · {{ row.seriesOccurrences }} Termine
+                  </span>
+                } @else {
+                  <span class="badge">Einmalig</span>
+                }
+              </td>
+              <td>{{ row.block.reason }}</td>
+              <td class="actions-col">
+                <button
+                  mat-icon-button
+                  type="button"
+                  aria-label="Sperre entfernen"
+                  (click)="deleteSingle(row)"
+                >
+                  <mat-icon fontSet="material-symbols-outlined">delete</mat-icon>
+                </button>
+                @if (row.isSeriesMember) {
+                  <button
+                    mat-icon-button
+                    type="button"
+                    aria-label="Serie entfernen"
+                    (click)="deleteSeries(row)"
+                  >
+                    <mat-icon fontSet="material-symbols-outlined">event_repeat</mat-icon>
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
