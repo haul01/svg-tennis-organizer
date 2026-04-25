@@ -232,10 +232,15 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-// Seed runs in every environment — the Ensure*-helpers are idempotent
-// (early-return if rows exist), and prod still needs roles + the
-// initial admin + courts + system settings to be usable on first boot.
-await SeedData.RunAsync(app.Services);
+// Seed runs in every environment except Testing — the Ensure*-helpers
+// are idempotent (early-return if rows exist), and prod still needs
+// roles + the initial admin + courts + system settings to be usable on
+// first boot. Integration tests control seeding themselves via
+// ApiTestEnvironment.SeedBaselineAsync after migrations have applied.
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    await SeedData.RunAsync(app.Services);
+}
 
 app.UseHttpsRedirection();
 app.UseCors();
