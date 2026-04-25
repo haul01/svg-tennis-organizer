@@ -16,6 +16,13 @@ public class Reservation
     public Guid? GuestPlayerId { get; set; }
     public GuestPlayer? GuestPlayer { get; set; }
 
+    /// <summary>
+    /// True when the booking includes a guest player. The named guest
+    /// (GuestPlayerId) is optional and may stay null until the guest-name
+    /// flow ships; this flag is the lightweight billing signal.
+    /// </summary>
+    public bool HasGuest { get; set; }
+
     public DateTimeOffset StartsAt { get; set; }
     public DateTimeOffset EndsAt { get; set; }
 

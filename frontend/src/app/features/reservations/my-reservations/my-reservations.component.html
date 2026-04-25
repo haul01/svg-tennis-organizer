@@ -62,6 +62,11 @@
                     <dt><mat-icon fontSet="material-symbols-outlined">group</mat-icon></dt>
                     <dd>Gast: {{ g }}</dd>
                   </div>
+                } @else if (r.hasGuest) {
+                  <div>
+                    <dt><mat-icon fontSet="material-symbols-outlined">group</mat-icon></dt>
+                    <dd>Mit Gastspieler</dd>
+                  </div>
                 }
               </dl>
               @if (r.canCancel) {

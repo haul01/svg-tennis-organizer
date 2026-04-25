@@ -67,13 +67,15 @@ export class BookingDialogComponent {
     this.ruleFailures.set([]);
     this.submitting.set(true);
 
-    // Guest name collection is deferred; the toggle only surfaces the fee
-    // reminder for now. GuestPlayerId stays null until that flow ships.
+    // Guest name capture is deferred; the toggle persists as a boolean
+    // flag on the reservation so a future billing screen can count guest
+    // bookings without needing the named-guest flow first.
     const result = await this.reservations.create({
       courtId: this.data.courtId,
       startsAt: this.data.startsAt.toISOString(),
       endsAt: this.data.endsAt.toISOString(),
-      guestPlayerId: null
+      guestPlayerId: null,
+      hasGuest: this.hasGuest()
     });
     this.submitting.set(false);
 

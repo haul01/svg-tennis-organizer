@@ -71,7 +71,8 @@ describe('ReservationsService', () => {
     courtId: 1,
     startsAt: '2026-06-10T18:00:00+02:00',
     endsAt: '2026-06-10T19:00:00+02:00',
-    guestPlayerId: null
+    guestPlayerId: null,
+    hasGuest: false
   };
 
   it('loadWeek stores the data and clears loading + error', async () => {
@@ -149,6 +150,7 @@ describe('ReservationsService', () => {
         endsAt: '2026-06-10T19:00:00+02:00',
         status: ReservationStatus.Active,
         cancelledAt: null,
+        hasGuest: false,
         guestName: null,
         rowVersion: 'AAA='
       }

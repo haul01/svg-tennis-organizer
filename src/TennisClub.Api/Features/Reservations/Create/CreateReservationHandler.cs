@@ -49,6 +49,9 @@ public sealed class CreateReservationHandler(
             CourtId = req.CourtId,
             MemberId = memberId,
             GuestPlayerId = req.GuestPlayerId,
+            // A picked guest implies the booking has a guest, even if the
+            // client forgot the boolean.
+            HasGuest = req.HasGuest || req.GuestPlayerId is not null,
             StartsAt = req.StartsAt,
             EndsAt = req.EndsAt,
             Status = ReservationStatus.Active,

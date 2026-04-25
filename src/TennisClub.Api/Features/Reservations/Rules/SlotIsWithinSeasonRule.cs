@@ -1,3 +1,4 @@
+using TennisClub.Api.Common.Time;
 using TennisClub.Api.Infrastructure.Persistence;
 
 namespace TennisClub.Api.Features.Reservations.Rules;
@@ -14,7 +15,9 @@ public sealed class SlotIsWithinSeasonRule(AppDbContext db, TimeProvider time) :
                 "Zurzeit ist keine Saison aktiv. Buchungen sind nicht möglich.");
         }
 
-        var slotDate = DateOnly.FromDateTime(a.StartsAt.DateTime);
+        // Compare against Vienna wall-clock - the season's StartDate / EndDate
+        // are stored as DateOnly without TZ context.
+        var slotDate = ClubTimeZone.LocalDate(a.StartsAt);
         if (slotDate < season.StartDate || slotDate > season.EndDate)
         {
             return RuleResult.Fail(

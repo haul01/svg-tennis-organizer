@@ -29,6 +29,7 @@ export interface MyReservationDto {
   endsAt: string;
   status: ReservationStatus;
   cancelledAt: string | null;
+  hasGuest: boolean;
   guestName: string | null;
   rowVersion: string;
 }
@@ -38,6 +39,7 @@ export interface CreateReservationRequest {
   startsAt: string;
   endsAt: string;
   guestPlayerId: string | null;
+  hasGuest: boolean;
 }
 
 export interface CreateReservationResponse {

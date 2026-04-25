@@ -4,4 +4,5 @@ public sealed record CreateReservationRequest(
     int CourtId,
     DateTimeOffset StartsAt,
     DateTimeOffset EndsAt,
-    Guid? GuestPlayerId);
+    Guid? GuestPlayerId,
+    bool HasGuest = false);

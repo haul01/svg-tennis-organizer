@@ -38,6 +38,7 @@ public sealed class ListMineHandler(AppDbContext db, TimeProvider time)
                 r.EndsAt,
                 r.Status,
                 r.CancelledAt,
+                r.HasGuest,
                 r.GuestPlayer != null
                     ? (r.GuestPlayer.FirstName + " " + r.GuestPlayer.LastName)
                     : null,
