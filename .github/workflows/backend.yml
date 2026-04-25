@@ -60,6 +60,9 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Restore (needed for dotnet-ef metadata)
+        run: dotnet restore src/TennisClub.Api
+
       - name: Generate idempotent migration script
         run: |
           dotnet tool install --global dotnet-ef
