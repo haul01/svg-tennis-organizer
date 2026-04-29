@@ -1,4 +1,10 @@
+declare global {
+  interface Window {
+    TC_CONFIG?: { apiUrl?: string };
+  }
+}
+
 export const environment = {
   production: true,
-  apiUrl: 'https://tennisclub-api.wittypond-0bbaa145.germanywestcentral.azurecontainerapps.io/api'
+  apiUrl: window.TC_CONFIG?.apiUrl ?? '/api'
 };
