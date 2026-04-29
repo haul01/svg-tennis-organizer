@@ -1,0 +1,51 @@
+# Single-origin setup: Caddy serves the Angular static files and reverse
+# proxies /api/* to the dotnet API container. TLS is handled by the
+# Cloudflare Tunnel sitting in front; Caddy listens on plain HTTP and is
+# only reachable from localhost.
+:80 {
+	encode gzip
+
+	# API: keep the /api prefix end-to-end so endpoints like
+	# /api/auth/login resolve unchanged on the dotnet side.
+	handle /api/* {
+		reverse_proxy api:8080 {
+			# Forward client info that Cloudflare set on the original request.
+			header_up X-Real-IP {http.request.header.cf-connecting-ip}
+			header_up X-Forwarded-For {http.request.header.cf-connecting-ip}
+		}
+	}
+
+	# Don't try to send config.js through cache busting - the file is
+	# meant to be edited in place to swap the API URL between deploys.
+	@config path /config.js
+	header @config Cache-Control "no-cache, no-store, must-revalidate"
+
+	# Hashed Angular bundles are immutable, can be cached forever.
+	@hashed path_regexp ^/(chunk|main|polyfills|styles)-[A-Z0-9]+\.(js|css)$
+	header @hashed Cache-Control "public, max-age=31536000, immutable"
+
+	# Frontend static files with SPA fallback to index.html so deep links
+	# like /reservations or /admin/members hit the Angular router.
+	handle {
+		root * /srv/app
+		try_files {path} /index.html
+		file_server
+	}
+
+	# Security headers shared by everything Caddy serves. Mirrors the
+	# old staticwebapp.config.json. Strict 'self' for scripts requires
+	# the runtime config.js to ship from the same origin (it does).
+	header {
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'"
+	}
+
+	log {
+		output stdout
+		format json
+		level INFO
+	}
+}

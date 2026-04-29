@@ -232,13 +232,18 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-// Seed runs in every environment except Testing — the Ensure*-helpers
-// are idempotent (early-return if rows exist), and prod still needs
-// roles + the initial admin + courts + system settings to be usable on
-// first boot. Integration tests control seeding themselves via
-// ApiTestEnvironment.SeedBaselineAsync after migrations have applied.
+// Migrations + seed run in every environment except Testing. Single
+// replica on the Pi makes Migrate-on-startup safe (no concurrency race),
+// and the Ensure*-helpers in SeedData early-return when rows exist so
+// re-running them on every boot is idempotent. Integration tests apply
+// migrations + custom seed via ApiTestEnvironment themselves.
 if (!app.Environment.IsEnvironment("Testing"))
 {
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await db.Database.MigrateAsync();
+    }
     await SeedData.RunAsync(app.Services);
 }
 

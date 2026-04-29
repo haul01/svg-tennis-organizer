@@ -1,0 +1,75 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: tennisclub-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tennisclub
+      POSTGRES_USER: tennis
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tennis -d tennisclub"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ../src/TennisClub.Api
+      dockerfile: Dockerfile
+    container_name: tennisclub-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Default: "Host=postgres;Database=tennisclub;Username=tennis;Password=${DB_PASSWORD}"
+      Jwt__Issuer: TennisClub.Api
+      Jwt__Audience: TennisClub.Frontend
+      Jwt__SigningKey: ${JWT_SIGNING_KEY}
+      Jwt__AccessTokenMinutes: 15
+      Jwt__RefreshTokenDays: 7
+      Frontend__BaseUrl: ${FRONTEND_BASE_URL}
+      Cors__AllowedOrigins__0: ${FRONTEND_BASE_URL}
+      Seed__Admin__Email: ${ADMIN_EMAIL}
+      Seed__Admin__Password: ${ADMIN_PASSWORD}
+      Seed__Admin__FirstName: Admin
+      Seed__Admin__LastName: User
+      Seed__Season__Name: ${SEASON_NAME}
+      Seed__Season__StartDate: ${SEASON_START}
+      Seed__Season__EndDate: ${SEASON_END}
+      Seed__Season__OpeningTime: ${SEASON_OPENING}
+      Seed__Season__ClosingTime: ${SEASON_CLOSING}
+      Seed__Season__SlotDurationMinutes: ${SEASON_SLOT_MINUTES}
+      Seed__Courts__0__Name: "Platz 1"
+      Seed__Courts__0__DisplayOrder: 1
+      Seed__Courts__1__Name: "Platz 2"
+      Seed__Courts__1__DisplayOrder: 2
+      Seed__Courts__2__Name: "Platz 3"
+      Seed__Courts__2__DisplayOrder: 3
+    volumes:
+      # DataProtection keys live here so password-reset tokens survive
+      # container restarts. Without this every restart invalidates all
+      # outstanding reset / set-password URLs.
+      - ./data/dataprotection-keys:/root/.aspnet/DataProtection-Keys
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: tennisclub-caddy
+    restart: unless-stopped
+    ports:
+      # Cloudflare Tunnel terminates TLS at the edge and forwards plain
+      # HTTP to localhost:80 here. If you ever expose this directly,
+      # switch to the Caddy automatic-HTTPS config.
+      - "127.0.0.1:80:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ../frontend/dist/frontend/browser:/srv/app:ro
+      - ./data/caddy:/data
+      - ./data/caddy-config:/config
+    depends_on:
+      - api

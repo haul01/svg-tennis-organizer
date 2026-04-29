@@ -52,3 +52,7 @@ migrate.sql
 
 # Stitch MCP screen-fetch artefacts (land at repo root by default)
 /screen_*.png
+
+# Pi-deploy runtime data + secrets (never commit)
+deploy/data/
+deploy/.env
