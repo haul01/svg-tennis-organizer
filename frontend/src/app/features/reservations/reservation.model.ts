@@ -18,8 +18,7 @@ export interface WeekReservationDto {
 }
 
 /**
- * Member-owned reservation listing. `rowVersion` is the base64-encoded
- * concurrency token - echo it back via the If-Match header on cancel.
+ * Member-owned reservation listing.
  */
 export interface MyReservationDto {
   id: string;
@@ -31,7 +30,6 @@ export interface MyReservationDto {
   cancelledAt: string | null;
   hasGuest: boolean;
   guestName: string | null;
-  rowVersion: string;
 }
 
 export interface CreateReservationRequest {

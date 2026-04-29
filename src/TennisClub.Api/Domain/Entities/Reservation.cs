@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using TennisClub.Api.Domain.Enums;
 
 namespace TennisClub.Api.Domain.Entities;
@@ -29,7 +28,4 @@ public class Reservation
     public ReservationStatus Status { get; set; } = ReservationStatus.Active;
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset? CancelledAt { get; set; }
-
-    [Timestamp]
-    public byte[] RowVersion { get; set; } = [];
 }

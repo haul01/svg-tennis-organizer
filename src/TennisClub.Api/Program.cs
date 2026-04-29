@@ -55,7 +55,7 @@ var connectionString = builder.Configuration.GetConnectionString("Default")
         "Connection string 'Default' not configured.");
 
 builder.Services.AddDbContext<AppDbContext>(opts =>
-    opts.UseSqlServer(connectionString));
+    opts.UseNpgsql(connectionString));
 
 // Identity (core only - we use JWT, not cookies).
 // DataProtection is required for default token providers (password reset).

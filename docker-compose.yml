@@ -1,14 +1,15 @@
 services:
-  sql:
-    image: mcr.microsoft.com/azure-sql-edge:latest
-    container_name: tennisclub-sql
+  postgres:
+    image: postgres:16-alpine
+    container_name: tennisclub-postgres
     environment:
-      - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=DevPassword123!
+      POSTGRES_DB: TennisClub
+      POSTGRES_USER: tennis
+      POSTGRES_PASSWORD: DevPassword123!
     ports:
-      - "1433:1433"
+      - "5432:5432"
     volumes:
-      - tennisclub-sql-data:/var/opt/mssql
+      - tennisclub-postgres-data:/var/lib/postgresql/data
 
 volumes:
-  tennisclub-sql-data:
+  tennisclub-postgres-data:

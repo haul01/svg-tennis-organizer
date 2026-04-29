@@ -66,12 +66,11 @@ describe('ReservationsApi', () => {
     req.flush({ id: 'abc' });
   });
 
-  it('cancel wraps the base64 rowVersion in a quoted If-Match header', () => {
-    api.cancel('reservation-id', 'QUFB').subscribe();
+  it('cancel issues a plain DELETE on the reservation id', () => {
+    api.cancel('reservation-id').subscribe();
 
     const req = httpMock.expectOne(`${baseUrl}/reservation-id`);
     expect(req.request.method).toBe('DELETE');
-    expect(req.request.headers.get('If-Match')).toBe('"QUFB"');
     req.flush(null);
   });
 });

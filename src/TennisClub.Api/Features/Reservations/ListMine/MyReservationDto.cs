@@ -11,7 +11,4 @@ public sealed record MyReservationDto(
     ReservationStatus Status,
     DateTimeOffset? CancelledAt,
     bool HasGuest,
-    string? GuestName,
-    // Base64-serialized by default - the client echoes it back via If-Match
-    // on cancel requests so optimistic locking works over HTTP.
-    byte[] RowVersion);
+    string? GuestName);

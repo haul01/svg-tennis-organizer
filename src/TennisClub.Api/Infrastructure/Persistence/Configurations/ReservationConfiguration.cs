@@ -27,13 +27,15 @@ public class ReservationConfiguration : IEntityTypeConfiguration<Reservation>
 
         // Filtered unique index - primary defense against double-booking.
         // Only active reservations must be unique per (Court, StartsAt).
+        // Postgres requires double-quoted identifiers for case-sensitive
+        // PascalCase column names.
         builder.HasIndex(r => new { r.CourtId, r.StartsAt })
-            .HasFilter("[Status] = 0")
+            .HasFilter("\"Status\" = 0")
             .IsUnique();
 
         // Query index for "reservations for week" (week-grid query).
         builder.HasIndex(r => new { r.StartsAt, r.CourtId })
-            .HasFilter("[Status] = 0");
+            .HasFilter("\"Status\" = 0");
 
         // Query index for "my reservations".
         builder.HasIndex(r => new { r.MemberId, r.Status, r.StartsAt });

@@ -100,7 +100,7 @@ export class MyReservationsComponent {
     if (!confirmed) return;
 
     this.cancelInFlight.set(r.id);
-    const result = await this.reservations.cancel(r.id, r.rowVersion);
+    const result = await this.reservations.cancel(r.id);
     this.cancelInFlight.set(null);
 
     if (result.ok) {

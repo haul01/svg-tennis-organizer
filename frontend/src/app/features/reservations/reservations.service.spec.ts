@@ -17,7 +17,7 @@ class FakeApi {
   getWeekCalls: Date[] = [];
   getMineCalls: ListMineOptions[] = [];
   createCalls: CreateReservationRequest[] = [];
-  cancelCalls: { id: string; rowVersion: string }[] = [];
+  cancelCalls: { id: string }[] = [];
 
   weekResponse: Observable<WeekReservationDto[]> = of([]);
   mineResponse: Observable<MyReservationDto[]> = of([]);
@@ -36,8 +36,8 @@ class FakeApi {
     this.createCalls.push(req);
     return this.createResponse;
   }
-  cancel(id: string, rowVersion: string): Observable<void> {
-    this.cancelCalls.push({ id, rowVersion });
+  cancel(id: string): Observable<void> {
+    this.cancelCalls.push({ id });
     return this.cancelResponse;
   }
 }
@@ -151,20 +151,19 @@ describe('ReservationsService', () => {
         status: ReservationStatus.Active,
         cancelledAt: null,
         hasGuest: false,
-        guestName: null,
-        rowVersion: 'AAA='
+        guestName: null
       }
     ]);
     api.weekResponse = of(sampleWeek);
     await service.loadWeek(weekStart);
     await service.loadMine();
 
-    const result = await service.cancel('r1', 'AAA=');
+    const result = await service.cancel('r1');
 
     expect(result).toEqual({ ok: true });
     expect(service.myReservations()[0].status).toBe(ReservationStatus.Cancelled);
     expect(service.weekReservations().find(r => r.id === 'r1')).toBeUndefined();
-    expect(api.cancelCalls).toEqual([{ id: 'r1', rowVersion: 'AAA=' }]);
+    expect(api.cancelCalls).toEqual([{ id: 'r1' }]);
   });
 
   it('cancel maps 409 to conflict without mutating state', async () => {
@@ -174,7 +173,7 @@ describe('ReservationsService', () => {
     api.cancelResponse = throwError(() =>
       httpError(409, { error: 'Die Buchung wurde inzwischen geändert, bitte neu laden.' }));
 
-    const result = await service.cancel('r1', 'AAA=');
+    const result = await service.cancel('r1');
 
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.status).toBe('conflict');

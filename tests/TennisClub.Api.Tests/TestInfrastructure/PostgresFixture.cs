@@ -1,16 +1,16 @@
-using Testcontainers.MsSql;
+using Testcontainers.PostgreSql;
 
 namespace TennisClub.Api.Tests.TestInfrastructure;
 
 /// <summary>
-/// Starts a shared SQL Server container for the duration of the test run.
+/// Starts a shared Postgres container for the duration of the test run.
 /// Individual test classes create their own database inside this container
 /// so tests don't interfere with each other.
 /// </summary>
-public sealed class MsSqlFixture : IAsyncLifetime
+public sealed class PostgresFixture : IAsyncLifetime
 {
-    public MsSqlContainer Container { get; } =
-        new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest").Build();
+    public PostgreSqlContainer Container { get; } =
+        new PostgreSqlBuilder("postgres:16-alpine").Build();
 
     public Task InitializeAsync() => Container.StartAsync();
 
@@ -18,4 +18,4 @@ public sealed class MsSqlFixture : IAsyncLifetime
 }
 
 [CollectionDefinition("Sql")]
-public class SqlTestCollection : ICollectionFixture<MsSqlFixture>;
+public class SqlTestCollection : ICollectionFixture<PostgresFixture>;

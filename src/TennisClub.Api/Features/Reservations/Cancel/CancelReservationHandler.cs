@@ -17,7 +17,6 @@ public sealed class CancelReservationHandler(
     public async Task<Result> HandleAsync(
         Guid reservationId,
         Guid memberId,
-        byte[] rowVersion,
         CancellationToken ct)
     {
         var reservation = await db.Reservations.FindAsync([reservationId], ct);
@@ -27,6 +26,8 @@ public sealed class CancelReservationHandler(
         if (reservation is null || reservation.MemberId != memberId)
             return Result.NotFound("Buchung nicht gefunden.");
 
+        // Idempotent on double-click: second request sees Cancelled and exits
+        // before re-saving / re-emailing.
         if (reservation.Status != ReservationStatus.Active)
             return Result.Invalid("Diese Buchung ist bereits storniert.");
 
@@ -38,18 +39,9 @@ public sealed class CancelReservationHandler(
                 $"Stornierung nur bis {settings.MinCancellationHours} Stunden vor Beginn möglich.");
         }
 
-        db.Entry(reservation).Property(r => r.RowVersion).OriginalValue = rowVersion;
         reservation.Status = ReservationStatus.Cancelled;
         reservation.CancelledAt = time.GetUtcNow();
-
-        try
-        {
-            await db.SaveChangesAsync(ct);
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            return Result.Conflict("Die Buchung wurde inzwischen geändert, bitte neu laden.");
-        }
+        await db.SaveChangesAsync(ct);
 
         // Best-effort: a mail-pipeline hiccup must not undo a successful cancel.
         try { await SendCancellationAsync(reservation, ct); }

@@ -11,7 +11,7 @@ using TennisClub.Api.Tests.TestInfrastructure;
 namespace TennisClub.Api.Tests.Integration;
 
 [Collection("Sql")]
-public class CreateReservationEndpointTests(MsSqlFixture sql) : IAsyncLifetime
+public class CreateReservationEndpointTests(PostgresFixture sql) : IAsyncLifetime
 {
     private ApiTestEnvironment _env = null!;
 

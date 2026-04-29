@@ -1,18 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using TennisClub.Api.Domain.Entities;
 using TennisClub.Api.Infrastructure.Persistence;
 
 namespace TennisClub.Api.Tests.TestInfrastructure;
 
 /// <summary>
 /// Test-only subclass of <see cref="AppDbContext"/> that neutralises
-/// SQL-Server-specific mapping details so SQLite-backed unit tests work:
-///   - rowversion byte[] with a default value (SQLite has no server-side
-///     rowversion generation)
-///   - DateTimeOffset via binary conversion so range queries translate.
-/// Real concurrency and timezone behaviour is covered by SQL-Server
-/// integration tests in Phase 3.
+/// provider-specific mapping details so the SQLite-backed unit tests
+/// translate cleanly: DateTimeOffset → binary so range queries work.
+/// Real timezone behaviour is covered by the Postgres integration tests.
 /// </summary>
 public sealed class TestAppDbContext(DbContextOptions<AppDbContext> options)
     : AppDbContext(options)
@@ -33,10 +29,5 @@ public sealed class TestAppDbContext(DbContextOptions<AppDbContext> options)
                 }
             }
         }
-
-        builder.Entity<Reservation>()
-            .Property(r => r.RowVersion)
-            .ValueGeneratedNever()
-            .HasDefaultValue(new byte[] { 0 });
     }
 }

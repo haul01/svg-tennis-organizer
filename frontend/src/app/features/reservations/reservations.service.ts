@@ -96,9 +96,9 @@ export class ReservationsService {
     }
   }
 
-  async cancel(id: string, rowVersion: string): Promise<CancelResult> {
+  async cancel(id: string): Promise<CancelResult> {
     try {
-      await firstValueFrom(this.api.cancel(id, rowVersion));
+      await firstValueFrom(this.api.cancel(id));
       // Keep local lists in sync without a full roundtrip.
       this._myReservations.update(list =>
         list.map(r => r.id === id

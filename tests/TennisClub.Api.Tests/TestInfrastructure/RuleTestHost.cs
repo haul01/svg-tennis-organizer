@@ -113,10 +113,7 @@ public sealed class RuleTestHost : IAsyncDisposable
             StartsAt = startsAt,
             EndsAt = endsAt,
             Status = status,
-            CreatedAt = Time.GetUtcNow(),
-            // SQLite has no server-side rowversion generation; provide a value
-            // so the NOT NULL constraint on byte[] holds.
-            RowVersion = [0]
+            CreatedAt = Time.GetUtcNow()
         };
         Db.Reservations.Add(r);
         Db.SaveChanges();

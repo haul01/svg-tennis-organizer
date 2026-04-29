@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 using TennisClub.Api.Domain.Entities;
 using TennisClub.Api.Features.Auth.Shared;
 using TennisClub.Api.Infrastructure.Auth;
@@ -11,9 +11,9 @@ using TennisClub.Api.Infrastructure.Persistence.Seed;
 namespace TennisClub.Api.Tests.TestInfrastructure;
 
 /// <summary>
-/// Per-test-class helper: creates a unique database inside the shared SQL
-/// container, builds an <see cref="ApiTestFactory"/>, applies migrations,
-/// and exposes helpers to seed baseline data and issue JWTs.
+/// Per-test-class helper: creates a unique database inside the shared
+/// Postgres container, builds an <see cref="ApiTestFactory"/>, applies
+/// migrations, and exposes helpers to seed baseline data and issue JWTs.
 /// </summary>
 public sealed class ApiTestEnvironment : IAsyncDisposable
 {
@@ -34,22 +34,22 @@ public sealed class ApiTestEnvironment : IAsyncDisposable
         Factory = factory;
     }
 
-    public static async Task<ApiTestEnvironment> CreateAsync(MsSqlFixture fixture)
+    public static async Task<ApiTestEnvironment> CreateAsync(PostgresFixture fixture)
     {
         var master = fixture.Container.GetConnectionString();
         var dbName = $"test_{Guid.NewGuid():N}";
 
-        await using (var conn = new SqlConnection(master))
+        await using (var conn = new NpgsqlConnection(master))
         {
             await conn.OpenAsync();
             await using var cmd = conn.CreateCommand();
-            cmd.CommandText = $"CREATE DATABASE [{dbName}]";
+            cmd.CommandText = $"CREATE DATABASE \"{dbName}\"";
             await cmd.ExecuteNonQueryAsync();
         }
 
-        var targetConnString = new SqlConnectionStringBuilder(master)
+        var targetConnString = new NpgsqlConnectionStringBuilder(master)
         {
-            InitialCatalog = dbName
+            Database = dbName
         }.ConnectionString;
 
         var factory = new ApiTestFactory(targetConnString);
@@ -168,12 +168,14 @@ public sealed class ApiTestEnvironment : IAsyncDisposable
         // Tear down the test database so the container stays clean across classes.
         try
         {
-            await using var conn = new SqlConnection(_masterConnectionString);
+            await using var conn = new NpgsqlConnection(_masterConnectionString);
             await conn.OpenAsync();
             await using var cmd = conn.CreateCommand();
+            // Force-disconnect any leftover sessions, then drop.
             cmd.CommandText =
-                $"ALTER DATABASE [{_dbName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; " +
-                $"DROP DATABASE [{_dbName}]";
+                $"SELECT pg_terminate_backend(pid) FROM pg_stat_activity " +
+                $"WHERE datname = '{_dbName}' AND pid <> pg_backend_pid(); " +
+                $"DROP DATABASE \"{_dbName}\"";
             await cmd.ExecuteNonQueryAsync();
         }
         catch

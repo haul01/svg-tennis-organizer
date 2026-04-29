@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
@@ -39,12 +39,7 @@ export class ReservationsApi {
     return this.http.post<CreateReservationResponse>(this.baseUrl, req);
   }
 
-  /**
-   * Base64 RowVersion goes into If-Match as a quoted ETag value; the
-   * backend strips the quotes and compares byte-for-byte.
-   */
-  cancel(id: string, rowVersion: string): Observable<void> {
-    const headers = new HttpHeaders({ 'If-Match': `"${rowVersion}"` });
-    return this.http.delete<void>(`${this.baseUrl}/${id}`, { headers });
+  cancel(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
 }

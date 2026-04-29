@@ -41,8 +41,7 @@ public sealed class ListMineHandler(AppDbContext db, TimeProvider time)
                 r.HasGuest,
                 r.GuestPlayer != null
                     ? (r.GuestPlayer.FirstName + " " + r.GuestPlayer.LastName)
-                    : null,
-                r.RowVersion))
+                    : null))
             .ToListAsync(ct);
     }
 }

@@ -28,7 +28,7 @@ public class CancelReservationHandlerTests
             Now.AddDays(1), Now.AddDays(1).AddHours(1));
         var handler = new CancelReservationHandler(host.Db, host.Email, host.Templates, host.Time);
 
-        var result = await handler.HandleAsync(r.Id, member.Id, r.RowVersion, CancellationToken.None);
+        var result = await handler.HandleAsync(r.Id, member.Id, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         host.Db.ChangeTracker.Clear();
@@ -47,7 +47,7 @@ public class CancelReservationHandlerTests
             Now.AddDays(1), Now.AddDays(1).AddHours(1));
         var handler = new CancelReservationHandler(host.Db, host.Email, host.Templates, host.Time);
 
-        var result = await handler.HandleAsync(r.Id, intruder.Id, r.RowVersion, CancellationToken.None);
+        var result = await handler.HandleAsync(r.Id, intruder.Id, CancellationToken.None);
 
         result.Status.Should().Be(ResultStatus.NotFound);
     }
@@ -60,7 +60,7 @@ public class CancelReservationHandlerTests
         var handler = new CancelReservationHandler(host.Db, host.Email, host.Templates, host.Time);
 
         var result = await handler.HandleAsync(
-            Guid.NewGuid(), member.Id, [0], CancellationToken.None);
+            Guid.NewGuid(), member.Id, CancellationToken.None);
 
         result.Status.Should().Be(ResultStatus.NotFound);
     }
@@ -75,7 +75,7 @@ public class CancelReservationHandlerTests
             status: ReservationStatus.Cancelled);
         var handler = new CancelReservationHandler(host.Db, host.Email, host.Templates, host.Time);
 
-        var result = await handler.HandleAsync(r.Id, member.Id, r.RowVersion, CancellationToken.None);
+        var result = await handler.HandleAsync(r.Id, member.Id, CancellationToken.None);
 
         result.Status.Should().Be(ResultStatus.Invalid);
         result.Error.Should().Contain("bereits storniert");
@@ -91,7 +91,7 @@ public class CancelReservationHandlerTests
             Now.AddMinutes(30), Now.AddMinutes(90));
         var handler = new CancelReservationHandler(host.Db, host.Email, host.Templates, host.Time);
 
-        var result = await handler.HandleAsync(r.Id, member.Id, r.RowVersion, CancellationToken.None);
+        var result = await handler.HandleAsync(r.Id, member.Id, CancellationToken.None);
 
         result.Status.Should().Be(ResultStatus.Invalid);
         result.Error.Should().Contain("2 Stunden vor Beginn");
@@ -99,22 +99,5 @@ public class CancelReservationHandlerTests
         host.Db.ChangeTracker.Clear();
         var reloaded = await host.Db.Reservations.FindAsync(r.Id);
         reloaded!.Status.Should().Be(ReservationStatus.Active, "late cancel must not mutate state");
-    }
-
-    [Fact]
-    public async Task Cancel_RowVersionMismatch_ReturnsConflict()
-    {
-        await using var host = NewHost();
-        var member = host.AddMember();
-        var r = host.AddReservation(1, member.Id,
-            Now.AddDays(1), Now.AddDays(1).AddHours(1));
-        var handler = new CancelReservationHandler(host.Db, host.Email, host.Templates, host.Time);
-
-        var result = await handler.HandleAsync(r.Id, member.Id, [9, 9, 9], CancellationToken.None);
-
-        result.Status.Should().Be(ResultStatus.Conflict);
-        host.Db.ChangeTracker.Clear();
-        var reloaded = await host.Db.Reservations.FindAsync(r.Id);
-        reloaded!.Status.Should().Be(ReservationStatus.Active);
     }
 }

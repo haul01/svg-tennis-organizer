@@ -28,7 +28,7 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
                 "Connection string 'Default' not found. Set it in appsettings.Development.json or via env var ConnectionStrings__Default.");
 
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlServer(connectionString)
+            .UseNpgsql(connectionString)
             .Options;
 
         return new AppDbContext(options);
