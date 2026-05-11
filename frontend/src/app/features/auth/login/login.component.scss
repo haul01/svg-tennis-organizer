@@ -127,6 +127,13 @@
 }
 
 .submit {
+  // Hard-pin the Material 3 button tokens so the hover state layer
+  // keeps the label white instead of fading it to the default dark tone.
+  --mdc-filled-button-container-color: var(--tc-deep-navy);
+  --mdc-filled-button-label-text-color: #ffffff;
+  --mat-filled-button-state-layer-color: #ffffff;
+  --mat-filled-button-hover-state-layer-opacity: 0.08;
+
   height: 56px;
   margin-top: var(--tc-space-xs);
   background: var(--tc-deep-navy);
@@ -134,9 +141,9 @@
   border-radius: var(--tc-radius);
   font-weight: 600;
 
-  // Override Angular Material hover tone so it stays on-brand.
   &:hover:not([disabled]) {
     background: #12274a;
+    color: var(--tc-surface-container-lowest);
   }
 
   &__content {

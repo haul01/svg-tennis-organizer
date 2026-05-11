@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { AuthService } from '../../core/auth/auth.service';
@@ -13,6 +14,7 @@ import { AuthService } from '../../core/auth/auth.service';
     MatButtonModule,
     MatIconModule,
     MatToolbarModule,
+    MatTooltipModule,
     RouterLink,
     RouterLinkActive,
     RouterOutlet
@@ -30,10 +32,22 @@ import { AuthService } from '../../core/auth/auth.service';
       </nav>
       <span class="spacer"></span>
       @if (auth.currentUser(); as user) {
-        <span class="user">{{ user.firstName }} {{ user.lastName }}</span>
+        <a
+          mat-icon-button
+          routerLink="/profile"
+          aria-label="Profil"
+          [matTooltip]="user.firstName + ' ' + user.lastName"
+        >
+          <mat-icon fontSet="material-symbols-outlined">account_circle</mat-icon>
+        </a>
       }
-      <button mat-icon-button aria-label="Abmelden" (click)="auth.logout()">
-        <mat-icon>logout</mat-icon>
+      <button
+        mat-icon-button
+        (click)="auth.logout()"
+        aria-label="Abmelden"
+        matTooltip="Abmelden"
+      >
+        <mat-icon fontSet="material-symbols-outlined">logout</mat-icon>
       </button>
     </mat-toolbar>
     <main class="content">
@@ -44,9 +58,9 @@ import { AuthService } from '../../core/auth/auth.service';
     :host { display: flex; flex-direction: column; min-height: 100vh; }
     .brand { font-weight: 600; margin-right: 2rem; }
     .nav { display: flex; gap: 0.5rem; }
+    .nav a { color: inherit; }
     .nav .active { font-weight: 600; }
     .spacer { flex: 1; }
-    .user { margin-right: 0.5rem; opacity: 0.85; }
     .content { flex: 1; padding: 1.5rem; }
   `
 })
