@@ -21,7 +21,9 @@ import { AuthService } from '../../core/auth/auth.service';
   ],
   template: `
     <mat-toolbar color="primary">
-      <span class="brand">TennisClub</span>
+      <a routerLink="/reservations" class="brand" aria-label="Startseite">
+        <img src="assets/logo.png" alt="SV Gramastetten" class="brand__logo" />
+      </a>
       <nav class="nav">
         <a mat-button routerLink="/reservations" routerLinkActive="active">Platzbelegung</a>
         <a mat-button routerLink="/reservations/mine" routerLinkActive="active">Meine Buchungen</a>
@@ -56,7 +58,8 @@ import { AuthService } from '../../core/auth/auth.service';
   `,
   styles: `
     :host { display: flex; flex-direction: column; min-height: 100vh; }
-    .brand { font-weight: 600; margin-right: 2rem; }
+    .brand { display: inline-flex; align-items: center; margin-right: 2rem; }
+    .brand__logo { height: 36px; width: auto; display: block; }
     .nav { display: flex; gap: 0.5rem; }
     .nav a { color: inherit; }
     .nav .active { font-weight: 600; }

@@ -22,35 +22,16 @@
 .brand {
   text-align: center;
 
-  &__mark {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 80px;
-    height: 80px;
-    margin: 0 auto var(--tc-space-md);
-    border-radius: var(--tc-radius-lg);
-    background: var(--tc-deep-navy);
-    box-shadow: var(--tc-shadow-2);
-
-    mat-icon {
-      color: var(--tc-tennis-green);
-      font-size: 40px;
-      width: 40px;
-      height: 40px;
-      font-variation-settings: 'FILL' 1;
-    }
-  }
-
-  &__title {
-    @include tc-headline-xl;
-    margin: 0;
-    color: var(--tc-on-surface);
+  &__logo {
+    display: block;
+    width: 120px;
+    height: auto;
+    margin: 0 auto;
   }
 
   &__tagline {
     @include tc-label-bold;
-    margin: var(--tc-space-base) 0 0;
+    margin: var(--tc-space-sm) 0 0;
     color: var(--tc-on-surface-variant);
     text-transform: uppercase;
   }
