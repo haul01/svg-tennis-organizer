@@ -23,6 +23,15 @@ git -C .. pull --ff-only
 echo "→ building frontend (npm ci + production build)"
 ( cd ../frontend && npm ci && npm run build -- --configuration production )
 
+# ng build copies the source public/config.js into dist/ unchanged - that
+# file points the dev server at localhost:5555. On the Pi we serve API +
+# frontend from the same origin via Caddy, so overwrite with the prod
+# default. Edit this file by hand if you ever need a different URL.
+echo "→ pinning prod config.js (apiUrl=/api)"
+cat > ../frontend/dist/frontend/browser/config.js <<'EOF'
+window.TC_CONFIG = { apiUrl: '/api' };
+EOF
+
 echo "→ rebuilding api image"
 docker compose build api
 
