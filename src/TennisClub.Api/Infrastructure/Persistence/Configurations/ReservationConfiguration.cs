@@ -25,13 +25,10 @@ public class ReservationConfiguration : IEntityTypeConfiguration<Reservation>
             .HasForeignKey(r => r.GuestPlayerId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // Filtered unique index - primary defense against double-booking.
-        // Only active reservations must be unique per (Court, StartsAt).
-        // Postgres requires double-quoted identifiers for case-sensitive
-        // PascalCase column names.
-        builder.HasIndex(r => new { r.CourtId, r.StartsAt })
-            .HasFilter("\"Status\" = 0")
-            .IsUnique();
+        // Double-booking protection is enforced by the GiST EXCLUDE
+        // constraint added in the MultiSlotBookings migration (rejects
+        // any overlapping active reservation on the same court). EF Core
+        // can't model EXCLUDE constraints, so it isn't represented here.
 
         // Query index for "reservations for week" (week-grid query).
         builder.HasIndex(r => new { r.StartsAt, r.CourtId })

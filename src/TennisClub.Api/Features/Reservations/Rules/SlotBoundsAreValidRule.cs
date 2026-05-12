@@ -17,12 +17,27 @@ public sealed class SlotBoundsAreValidRule(AppDbContext db, TimeProvider time) :
         var season = await FindActiveSeasonAsync(db, time, ct);
         if (season is null) return RuleResult.Ok();
 
-        var duration = a.EndsAt - a.StartsAt;
-        if (Math.Abs(duration.TotalMinutes - season.SlotDurationMinutes) > 0.5)
+        var totalMinutes = (a.EndsAt - a.StartsAt).TotalMinutes;
+        var slot = season.SlotDurationMinutes;
+
+        // The duration must be a positive integer multiple of the slot
+        // length - half a minute tolerance covers DST seconds drift.
+        var ratio = totalMinutes / slot;
+        var slotCount = (int)Math.Round(ratio);
+        if (slotCount < 1 || Math.Abs(totalMinutes - slotCount * slot) > 0.5)
         {
             return RuleResult.Fail(
                 "INVALID_DURATION",
-                $"Ein Slot muss genau {season.SlotDurationMinutes} Minuten dauern.");
+                $"Die Buchungsdauer muss ein Vielfaches von {slot} Minuten sein.");
+        }
+
+        var settings = await db.SystemSettings.AsNoTracking().FirstOrDefaultAsync(ct);
+        var maxSlots = settings?.MaxSlotsPerBooking ?? 4;
+        if (slotCount > maxSlots)
+        {
+            return RuleResult.Fail(
+                "INVALID_DURATION",
+                $"Maximal {maxSlots} aufeinanderfolgende Slots pro Buchung ({maxSlots * slot} Minuten).");
         }
 
         return RuleResult.Ok();

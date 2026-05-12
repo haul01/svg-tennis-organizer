@@ -123,6 +123,35 @@
           eine nutzen oder stornieren, bevor eine neue möglich ist.
         </p>
       </section>
+
+      <section class="card">
+        <header class="card__header">
+          <mat-icon fontSet="material-symbols-outlined">timelapse</mat-icon>
+          <h2>Max. Dauer pro Buchung</h2>
+        </header>
+        <p class="card__description">
+          Wie viele aufeinanderfolgende Slots ein Mitglied auf einmal buchen darf.
+        </p>
+        <mat-form-field appearance="outline">
+          <mat-label>Slots</mat-label>
+          <input
+            matInput
+            type="number"
+            min="1"
+            max="8"
+            formControlName="maxSlotsPerBooking"
+          />
+          <span matTextSuffix>Slots</span>
+          @if (form.controls.maxSlotsPerBooking.hasError('min')
+            || form.controls.maxSlotsPerBooking.hasError('max')) {
+            <mat-error>Zwischen 1 und 8.</mat-error>
+          }
+        </mat-form-field>
+        <p class="card__example">
+          <mat-icon fontSet="material-symbols-outlined">info</mat-icon>
+          Beispiel: „4" + 30-Minuten-Slots = bis zu 2 Stunden Buchung.
+        </p>
+      </section>
     </form>
 
     @if (errorMessage(); as msg) {

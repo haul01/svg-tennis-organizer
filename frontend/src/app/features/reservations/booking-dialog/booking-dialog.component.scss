@@ -57,6 +57,41 @@ mat-dialog-content {
   }
 }
 
+.duration-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tc-space-xs);
+
+  &__label {
+    @include tc-label-bold;
+    color: var(--tc-on-surface);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  &__group {
+    width: 100%;
+    display: flex;
+  }
+
+  mat-button-toggle {
+    flex: 1;
+    font-weight: 600;
+  }
+
+  // The token-based overrides above don't always win in M3 - force the
+  // selected segment via the well-known internal class so the active
+  // duration is unmistakable.
+  ::ng-deep .mat-button-toggle-checked {
+    background: var(--tc-deep-navy) !important;
+
+    .mat-button-toggle-label-content,
+    .mat-pseudo-checkbox {
+      color: #ffffff !important;
+    }
+  }
+}
+
 .guest-toggle {
   display: flex;
   align-items: center;

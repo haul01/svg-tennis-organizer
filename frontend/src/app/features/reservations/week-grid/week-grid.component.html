@@ -59,50 +59,82 @@
         class="grid"
         [style.--tc-court-count]="courts().length"
       >
-        <div class="grid__corner"></div>
-        @for (court of courts(); track court.id) {
-          <div class="grid__court-header">
+        <div class="grid__corner" [style.gridRow]="1" [style.gridColumn]="1"></div>
+        @for (court of courts(); track court.id; let col = $index) {
+          <div class="grid__court-header" [style.gridRow]="1" [style.gridColumn]="col + 2">
             <span class="grid__court-name">{{ court.name }}</span>
           </div>
         }
 
+        <!-- Layer 1: slot grid (booking-agnostic, knows only free vs past). -->
         @for (label of timeSlots(); track label; let row = $index) {
-          <div class="grid__time">{{ label }}</div>
-          @for (cell of grid()[row]; track cell.courtId) {
+          <div class="grid__time" [style.gridRow]="row + 2" [style.gridColumn]="1">{{ label }}</div>
+          @for (cell of grid()[row]; track cell.courtId; let col = $index) {
             <button
               type="button"
-              class="cell"
-              [class]="'cell--' + cell.state"
+              class="slot"
+              [class]="'slot--' + cell.state"
+              [style.gridColumn]="col + 2"
+              [style.gridRow]="row + 2"
               [disabled]="cell.state !== 'free'"
-              (click)="onCellClick(cell)"
+              (click)="onSlotClick(cell)"
               [attr.aria-label]="
                 cell.state === 'free'
                   ? 'Slot buchen: Platz ' + cell.courtId + ' um ' + label
-                  : cell.state === 'mine'
-                    ? 'Meine Buchung: Platz ' + cell.courtId + ' um ' + label
-                    : cell.state === 'past'
-                      ? 'Vergangener Slot: Platz ' + cell.courtId + ' um ' + label
-                      : 'Belegt: Platz ' + cell.courtId + ' um ' + label
+                  : 'Vergangener Slot: Platz ' + cell.courtId + ' um ' + label
               "
             >
-              @switch (cell.state) {
-                @case ('mine') {
-                  <span class="cell__badge">
-                    <mat-icon fontSet="material-symbols-outlined">check_circle</mat-icon>
-                    Meine Buchung
-                  </span>
-                }
-                @case ('busy') { <span class="cell__label">Belegt</span> }
-                @case ('blocked') {
-                  <span class="cell__label cell__label--blocked">
-                    {{ cell.blockReason || 'Gesperrt' }}
-                  </span>
-                }
-                @case ('past') { <span class="cell__label"></span> }
-                @default { <span class="cell__label">Frei</span> }
+              @if (cell.state === 'free') {
+                <span class="slot__label">Frei</span>
               }
             </button>
           }
+        }
+
+        <!-- Layer 2: booking/block tiles, layered above the slot grid. -->
+        @for (tile of tiles(); track $index) {
+          <button
+            type="button"
+            class="tile"
+            [class]="'tile--' + tile.state"
+            [style.gridColumn]="tile.courtCol + 2"
+            [style.gridRow]="(tile.rowStart + 2) + ' / span ' + tile.rowSpan"
+            [disabled]="tile.state !== 'mine'"
+            (click)="onTileClick(tile)"
+            [attr.aria-label]="
+              tile.state === 'mine'
+                ? 'Meine Buchung auf Platz ' + tile.courtId
+                : tile.state === 'busy'
+                  ? 'Belegt auf Platz ' + tile.courtId
+                  : 'Gesperrt auf Platz ' + tile.courtId
+            "
+          >
+            @switch (tile.state) {
+              @case ('mine') {
+                <span class="tile__badge">
+                  <mat-icon fontSet="material-symbols-outlined">check_circle</mat-icon>
+                  Meine Buchung
+                </span>
+                <span class="tile__range">
+                  {{ tile.startsAt | date:'HH:mm' }}–{{ tile.endsAt | date:'HH:mm' }}
+                </span>
+              }
+              @case ('busy') {
+                <span class="tile__label">Belegt</span>
+                <span class="tile__range">
+                  {{ tile.startsAt | date:'HH:mm' }}–{{ tile.endsAt | date:'HH:mm' }}
+                </span>
+              }
+              @case ('blocked') {
+                <span class="tile__label tile__label--blocked">
+                  {{ tile.blockReason || 'Gesperrt' }}
+                </span>
+                <span class="tile__range">
+                  {{ tile.startsAt | date:'HH:mm' }}–{{ tile.endsAt | date:'HH:mm' }}
+                </span>
+              }
+            }
+          </button>
         }
       </div>
 

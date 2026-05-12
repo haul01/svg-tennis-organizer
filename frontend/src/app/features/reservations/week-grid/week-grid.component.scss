@@ -183,14 +183,20 @@
   }
 }
 
-.cell {
+// ---------------------------------------------------------------------------
+// Layer 1: slot grid. One button per (slot row x court). Knows only free vs
+// past. Always 1 row x 1 col. Booking tiles (Layer 2) sit on top via z-index.
+// ---------------------------------------------------------------------------
+.slot {
   all: unset;
+  position: relative;
+  z-index: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 64px;
-  margin: var(--tc-space-base);
-  padding: var(--tc-space-xs);
+  min-height: 32px;
+  margin: 2px var(--tc-space-base);
+  padding: 2px var(--tc-space-xs);
   border-radius: var(--tc-radius);
   box-sizing: border-box;
   text-align: center;
@@ -202,8 +208,48 @@
   &__label {
     @include tc-label-sm;
     color: var(--tc-on-surface-variant);
-    opacity: 0.6;
+    opacity: 0.8;
   }
+
+  // Per DESIGN.md: free slots always show the outline-variant border.
+  &--free {
+    border-color: var(--tc-outline-variant);
+
+    &:hover {
+      background: var(--tc-surface-container-low);
+    }
+  }
+
+  &--past {
+    cursor: default;
+    background: var(--tc-surface-container-low);
+    opacity: 0.5;
+  }
+
+  &[disabled] { pointer-events: none; }
+}
+
+// ---------------------------------------------------------------------------
+// Layer 2: booking + block tiles. Placed in the same CSS grid via grid-row
+// span, layered above the slot grid. Always fully opaque so the slots below
+// are completely hidden, and `pointer-events: auto` even when disabled so
+// clicks on busy/blocked tiles can't fall through to a free slot beneath.
+// ---------------------------------------------------------------------------
+.tile {
+  all: unset;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tc-space-base);
+  margin: 2px var(--tc-space-base);
+  padding: var(--tc-space-xs);
+  border-radius: var(--tc-radius);
+  box-sizing: border-box;
+  text-align: center;
+  cursor: pointer;
 
   &__badge {
     display: inline-flex;
@@ -221,24 +267,27 @@
     }
   }
 
-  &--free:hover {
-    background: var(--tc-surface-container-low);
-    border-color: var(--tc-outline-variant);
+  &__label {
+    @include tc-label-bold;
+    text-transform: uppercase;
+  }
+
+  &__range {
+    @include tc-label-sm;
+    opacity: 0.85;
   }
 
   &--mine {
-    cursor: not-allowed;
     background: var(--tc-deep-navy);
     color: var(--tc-surface-container-lowest);
 
-    .cell__badge { color: var(--tc-tennis-green); }
+    .tile__badge { color: var(--tc-tennis-green); }
   }
 
   &--busy {
     cursor: not-allowed;
     background: var(--tc-surface-dim);
-
-    .cell__label { opacity: 0.85; }
+    color: var(--tc-on-surface);
   }
 
   &--blocked {
@@ -251,24 +300,22 @@
       rgba(117, 119, 126, 0.25) 6px,
       rgba(117, 119, 126, 0.25) 12px
     );
+    color: var(--tc-on-surface);
 
-    .cell__label--blocked {
+    .tile__label--blocked {
       padding: 2px var(--tc-space-xs);
       background: rgba(255, 255, 255, 0.85);
       border-radius: var(--tc-radius-sm);
       color: var(--tc-on-surface);
-      opacity: 1;
       font-weight: 600;
     }
   }
 
-  &--past {
-    cursor: default;
-    background: var(--tc-surface-container-low);
-    opacity: 0.5;
+  // Disabled tiles still capture clicks (so we don't fall through to the
+  // free slot beneath) but render as not-allowed.
+  &[disabled] {
+    cursor: not-allowed;
   }
-
-  &[disabled] { pointer-events: none; }
 }
 
 .overlay {

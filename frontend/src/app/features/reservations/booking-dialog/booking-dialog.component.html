@@ -21,6 +21,21 @@
     </div>
   </div>
 
+  <div class="duration-picker">
+    <span class="duration-picker__label">Dauer</span>
+    <mat-button-toggle-group
+      class="duration-picker__group"
+      [value]="slotsCount()"
+      (change)="setSlots($event.value)"
+      aria-label="Dauer wählen"
+      hideSingleSelectionIndicator
+    >
+      @for (opt of durationOptions(); track opt.slots) {
+        <mat-button-toggle [value]="opt.slots">{{ opt.label }}</mat-button-toggle>
+      }
+    </mat-button-toggle-group>
+  </div>
+
   <div class="guest-toggle">
     <mat-slide-toggle
       color="primary"

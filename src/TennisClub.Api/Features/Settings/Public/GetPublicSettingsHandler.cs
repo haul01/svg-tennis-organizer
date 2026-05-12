@@ -11,6 +11,7 @@ public sealed class GetPublicSettingsHandler(AppDbContext db)
         return new PublicSettingsDto(
             settings.MaxAdvanceBookingDays,
             settings.MinCancellationHours,
-            settings.MaxOpenReservationsPerMember);
+            settings.MaxOpenReservationsPerMember,
+            settings.MaxSlotsPerBooking);
     }
 }

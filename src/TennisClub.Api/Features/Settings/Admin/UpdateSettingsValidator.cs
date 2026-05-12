@@ -17,5 +17,9 @@ public sealed class UpdateSettingsValidator : AbstractValidator<UpdateSettingsRe
         RuleFor(x => x.MaxOpenReservationsPerMember)
             .InclusiveBetween(1, 20)
             .WithMessage("Offene Buchungen pro Mitglied müssen zwischen 1 und 20 liegen.");
+
+        RuleFor(x => x.MaxSlotsPerBooking)
+            .InclusiveBetween(1, 8)
+            .WithMessage("Maximale Slots pro Buchung müssen zwischen 1 und 8 liegen.");
     }
 }

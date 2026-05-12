@@ -11,6 +11,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { DatePipe } from '@angular/common';
 import { addDays, endOfDay, format, startOfDay, startOfWeek } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { firstValueFrom } from 'rxjs';
@@ -18,9 +19,11 @@ import { firstValueFrom } from 'rxjs';
 import { CourtBlocksApi } from '../../../core/api/court-blocks.api';
 import { CourtsApi } from '../../../core/api/courts.api';
 import { SeasonsApi } from '../../../core/api/seasons.api';
+import { SettingsApi } from '../../../core/api/settings.api';
 import { CourtBlockDto } from '../../../core/models/court-block.model';
 import { CourtDto } from '../../../core/models/court.model';
 import { SeasonDto } from '../../../core/models/season.model';
+import { PublicSettingsDto } from '../../../core/models/settings.model';
 import {
   BookingDialogComponent,
   BookingDialogData,
@@ -29,13 +32,41 @@ import {
 import { WeekReservationDto } from '../reservation.model';
 import { ReservationsService } from '../reservations.service';
 
-type CellState = 'free' | 'mine' | 'busy' | 'blocked' | 'past';
+// Two-layer grid model.
+//
+// Layer 1 (slot grid): one SlotCell per (slot row x court). Knows only
+// time-based state - is the slot in the past or open for booking?
+// Reservations and blocks are NOT considered here.
+//
+// Layer 2 (booking tiles): one BookingTile per reservation/block,
+// placed in the same CSS-grid container via grid-row span. Tiles sit
+// on top of the slot layer (z-index) and visually cover the slots
+// underneath, so multi-slot bookings appear as one continuous block.
 
-interface Cell {
-  state: CellState;
+type SlotState = 'free' | 'past';
+
+interface SlotCell {
+  state: SlotState;
   startsAt: Date;
   endsAt: Date;
   courtId: number;
+}
+
+type TileState = 'mine' | 'busy' | 'blocked';
+
+interface BookingTile {
+  state: TileState;
+  /** 0-based slot index where the tile starts. */
+  rowStart: number;
+  /** Number of slot rows the tile covers. */
+  rowSpan: number;
+  /** 0-based court column index. */
+  courtCol: number;
+  courtId: number;
+  /** Real booking/block start, used for the label time range. */
+  startsAt: Date;
+  /** Real booking/block end. */
+  endsAt: Date;
   reservation?: WeekReservationDto;
   blockReason?: string;
 }
@@ -43,7 +74,7 @@ interface Cell {
 @Component({
   selector: 'app-week-grid',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatButtonModule, MatIconModule, MatProgressSpinnerModule],
+  imports: [DatePipe, MatButtonModule, MatIconModule, MatProgressSpinnerModule],
   templateUrl: './week-grid.component.html',
   styleUrl: './week-grid.component.scss'
 })
@@ -52,12 +83,14 @@ export class WeekGridComponent {
   private readonly courtsApi = inject(CourtsApi);
   private readonly seasonsApi = inject(SeasonsApi);
   private readonly blocksApi = inject(CourtBlocksApi);
+  private readonly settingsApi = inject(SettingsApi);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
 
   // State
   readonly courts = signal<CourtDto[]>([]);
   readonly season = signal<SeasonDto | null>(null);
+  readonly settings = signal<PublicSettingsDto | null>(null);
   readonly blocks = signal<CourtBlockDto[]>([]);
   readonly bootstrapping = signal(true);
   readonly weekStart = signal<Date>(startOfWeek(new Date(), { weekStartsOn: 1 }));
@@ -83,7 +116,8 @@ export class WeekGridComponent {
     return buildSlotLabels(s.openingTime, s.closingTime, s.slotDurationMinutes);
   });
 
-  readonly grid = computed<Cell[][]>(() => {
+  /** Slot-state grid: free or past, per (row x court). Booking-agnostic. */
+  readonly grid = computed<SlotCell[][]>(() => {
     const season = this.season();
     const courts = this.courts();
     if (!season || courts.length === 0) return [];
@@ -93,56 +127,118 @@ export class WeekGridComponent {
     const labels = this.timeSlots();
     const slotMinutes = season.slotDurationMinutes;
 
-    // Index reservations by (courtId + slot ISO start) for O(1) lookup.
-    const byKey = new Map<string, WeekReservationDto>();
-    for (const r of this.weekReservations()) {
-      const starts = new Date(r.startsAt);
-      byKey.set(keyOf(r.courtId, starts), r);
-    }
-
-    // Convert blocks to Date-intervals once; filter by selected day
-    // to keep the per-cell intersection cheap.
-    const dayBlocks = this.blocks()
-      .filter(b => b.courtId !== undefined)
-      .map(b => ({
-        courtId: b.courtId,
-        reason: b.reason,
-        startsAt: new Date(b.startsAt),
-        endsAt: new Date(b.endsAt)
-      }))
-      .filter(b => b.endsAt > startOfDay(day) && b.startsAt < endOfDay(day));
-
     return labels.map(label => {
       const [h, m] = label.split(':').map(Number);
       const rowStart = new Date(day);
       rowStart.setHours(h, m, 0, 0);
       const rowEnd = new Date(rowStart.getTime() + slotMinutes * 60_000);
+      const state: SlotState = rowEnd <= now ? 'past' : 'free';
 
-      return courts.map<Cell>(court => {
-        const reservation = byKey.get(keyOf(court.id, rowStart));
-        const block = dayBlocks.find(b =>
-          b.courtId === court.id && b.startsAt < rowEnd && b.endsAt > rowStart);
-
-        let state: CellState;
-        let blockReason: string | undefined;
-        if (reservation) {
-          state = reservation.isMine ? 'mine' : 'busy';
-        } else if (block) {
-          state = 'blocked';
-          blockReason = block.reason;
-        } else if (rowEnd <= now) {
-          state = 'past';
-        } else {
-          state = 'free';
-        }
-
-        return { state, startsAt: rowStart, endsAt: rowEnd, courtId: court.id, reservation, blockReason };
-      });
+      return courts.map<SlotCell>(court => ({
+        state,
+        startsAt: rowStart,
+        endsAt: rowEnd,
+        courtId: court.id
+      }));
     });
   });
 
+  /** Overlay tiles for reservations + blocks. Flat list, one per booking. */
+  readonly tiles = computed<BookingTile[]>(() => {
+    const season = this.season();
+    const courts = this.courts();
+    if (!season || courts.length === 0) return [];
+
+    const day = this.selectedDate();
+    const labels = this.timeSlots();
+    const slotMinutes = season.slotDurationMinutes;
+
+    const dayStart = startOfDay(day);
+    const dayEnd = endOfDay(day);
+
+    // Lookup: courtId -> column index.
+    const courtColById = new Map<number, number>();
+    courts.forEach((c, i) => courtColById.set(c.id, i));
+
+    // Slot-row start times for placing tiles on the grid.
+    const rowStarts = labels.map(label => {
+      const [h, m] = label.split(':').map(Number);
+      const d = new Date(day);
+      d.setHours(h, m, 0, 0);
+      return d;
+    });
+
+    const result: BookingTile[] = [];
+
+    const place = (
+      courtId: number,
+      starts: Date,
+      ends: Date,
+      state: TileState,
+      extras: { reservation?: WeekReservationDto; blockReason?: string }
+    ): void => {
+      const courtCol = courtColById.get(courtId);
+      if (courtCol === undefined) return;
+      if (ends <= dayStart || starts >= dayEnd) return;
+
+      // First slot row that the booking enters - any slot whose end is
+      // after `starts` works. Clamps to row 0 when the booking begins
+      // before the visible day.
+      let rowStart = -1;
+      for (let i = 0; i < rowStarts.length; i++) {
+        const slotEnd = new Date(rowStarts[i].getTime() + slotMinutes * 60_000);
+        if (starts < slotEnd) {
+          rowStart = i;
+          break;
+        }
+      }
+      if (rowStart < 0) return;
+
+      // Count how many subsequent slot rows the booking still covers.
+      let rowSpan = 1;
+      for (let i = rowStart + 1; i < rowStarts.length; i++) {
+        if (rowStarts[i] < ends) rowSpan++;
+        else break;
+      }
+
+      result.push({
+        state,
+        rowStart,
+        rowSpan,
+        courtCol,
+        courtId,
+        startsAt: starts,
+        endsAt: ends,
+        ...extras
+      });
+    };
+
+    for (const r of this.weekReservations()) {
+      place(
+        r.courtId,
+        new Date(r.startsAt),
+        new Date(r.endsAt),
+        r.isMine ? 'mine' : 'busy',
+        { reservation: r }
+      );
+    }
+
+    for (const b of this.blocks()) {
+      if (b.courtId === undefined) continue;
+      place(
+        b.courtId,
+        new Date(b.startsAt),
+        new Date(b.endsAt),
+        'blocked',
+        { blockReason: b.reason }
+      );
+    }
+
+    return result;
+  });
+
   constructor() {
-    // One-shot bootstrap of courts + season.
+    // One-shot bootstrap of courts + season + settings.
     void this.bootstrap();
 
     // Re-load the week whenever the selected week changes.
@@ -184,15 +280,19 @@ export class WeekGridComponent {
     this.weekStart.update(d => addDays(d, 7));
   }
 
-  onCellClick(cell: Cell): void {
+  onSlotClick(cell: SlotCell): void {
     if (cell.state !== 'free') return;
 
     const court = this.courts().find(c => c.id === cell.courtId);
+    const season = this.season();
+    if (!season) return;
+
     const data: BookingDialogData = {
       courtId: cell.courtId,
       courtName: court?.name ?? `Platz ${cell.courtId}`,
       startsAt: cell.startsAt,
-      endsAt: cell.endsAt
+      slotMinutes: season.slotDurationMinutes,
+      maxSlots: this.settings()?.maxSlotsPerBooking ?? 4
     };
 
     const ref = this.dialog.open<
@@ -210,14 +310,23 @@ export class WeekGridComponent {
     });
   }
 
+  onTileClick(tile: BookingTile): void {
+    if (tile.state !== 'mine') return;
+    // Cancel dialog comes with task #126's follow-up - for now confirm
+    // that the tile click was registered so we don't fall through silently.
+    this.snackBar.open('Storno-Dialog kommt noch.', 'OK', { duration: 3000 });
+  }
+
   private async bootstrap(): Promise<void> {
     try {
-      const [courts, season] = await Promise.all([
+      const [courts, season, settings] = await Promise.all([
         firstValueFrom(this.courtsApi.list()),
-        firstValueFrom(this.seasonsApi.current())
+        firstValueFrom(this.seasonsApi.current()),
+        firstValueFrom(this.settingsApi.getPublic())
       ]);
       this.courts.set(courts);
       this.season.set(season);
+      this.settings.set(settings);
     } finally {
       this.bootstrapping.set(false);
     }
@@ -227,10 +336,6 @@ export class WeekGridComponent {
 function todayIndex(): number {
   const dayIdx = new Date().getDay(); // Sun=0, Mon=1, ...
   return (dayIdx + 6) % 7;             // Shift so Monday=0, Sunday=6
-}
-
-function keyOf(courtId: number, startsAt: Date): string {
-  return `${courtId}|${startsAt.toISOString()}`;
 }
 
 function buildSlotLabels(openingTime: string, closingTime: string, slotMinutes: number): string[] {

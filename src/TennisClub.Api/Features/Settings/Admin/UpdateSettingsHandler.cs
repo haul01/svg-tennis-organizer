@@ -17,12 +17,14 @@ public sealed class UpdateSettingsHandler(AppDbContext db)
         settings.MaxAdvanceBookingDays = req.MaxAdvanceBookingDays;
         settings.MinCancellationHours = req.MinCancellationHours;
         settings.MaxOpenReservationsPerMember = req.MaxOpenReservationsPerMember;
+        settings.MaxSlotsPerBooking = req.MaxSlotsPerBooking;
 
         await db.SaveChangesAsync(ct);
 
         return Result.Success(new PublicSettingsDto(
             settings.MaxAdvanceBookingDays,
             settings.MinCancellationHours,
-            settings.MaxOpenReservationsPerMember));
+            settings.MaxOpenReservationsPerMember,
+            settings.MaxSlotsPerBooking));
     }
 }
