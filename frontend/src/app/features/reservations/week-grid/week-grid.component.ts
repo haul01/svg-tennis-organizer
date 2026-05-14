@@ -299,7 +299,12 @@ export class WeekGridComponent {
       BookingDialogComponent,
       BookingDialogData,
       BookingDialogResult
-    >(BookingDialogComponent, { data, width: '480px', autoFocus: false });
+    >(BookingDialogComponent, {
+      data,
+      width: '480px',
+      maxWidth: '95vw', // prevent overflow on phones < 480px wide
+      autoFocus: false
+    });
 
     ref.afterClosed().subscribe(result => {
       if (result?.ok) {

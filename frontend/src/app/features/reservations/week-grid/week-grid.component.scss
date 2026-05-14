@@ -137,7 +137,10 @@
   background: var(--tc-surface-container-lowest);
   border: 1px solid var(--tc-outline-variant);
   border-radius: var(--tc-radius-xl);
-  overflow: hidden;
+  // Horizontal scroll lets the user reach courts beyond the viewport
+  // (4+ courts on a 380px phone overflow). Vertical stays page-driven.
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .date-label {
@@ -147,15 +150,31 @@
   color: var(--tc-on-surface-variant);
   background: var(--tc-surface-container-low);
   border-bottom: 1px solid var(--tc-outline-variant);
+  // Anchor the date label at the visible-left edge during horizontal scroll.
+  position: sticky;
+  left: 0;
+  z-index: 3;
 }
 
 .grid {
   display: grid;
   grid-template-columns: 80px repeat(var(--tc-court-count), minmax(140px, 1fr));
 
+  // Below 640px viewport, shrink the time column and court min-widths so
+  // 3 courts still fit on a 380px phone without scrolling; 4+ scroll.
+  @media (max-width: 640px) {
+    grid-template-columns: 64px repeat(var(--tc-court-count), minmax(108px, 1fr));
+  }
+
+  // Sticky-left for the time column + top-left corner so they stay
+  // anchored when the grid scrolls horizontally. z-index 3 keeps them
+  // above .slot (z 0) and .tile (z 1) during overlap.
   &__corner {
     background: var(--tc-surface-container-low);
     border-bottom: 1px solid var(--tc-outline-variant);
+    position: sticky;
+    left: 0;
+    z-index: 3;
   }
 
   &__court-header {
@@ -180,6 +199,9 @@
     color: var(--tc-on-surface-variant);
     background: var(--tc-surface-container-low);
     border-bottom: 1px solid var(--tc-outline-variant);
+    position: sticky;
+    left: 0;
+    z-index: 3;
   }
 }
 
@@ -194,7 +216,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 32px;
+  // 44px is the Apple-HIG minimum touch target; also reads as comfortable
+  // on desktop where the mouse is precise but bigger hit area is fine.
+  min-height: 44px;
   margin: 2px var(--tc-space-base);
   padding: 2px var(--tc-space-xs);
   border-radius: var(--tc-radius);
