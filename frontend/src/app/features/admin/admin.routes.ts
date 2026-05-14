@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 
-import { PlaceholderComponent } from '../../shared/components/placeholder.component';
 import { AdminShellComponent } from './admin-shell.component';
 
 export const adminRoutes: Routes = [
@@ -52,8 +51,7 @@ export const adminRoutes: Routes = [
         title: 'Buchungs-Report',
         loadComponent: () =>
           import('./reports/reservations-report.component').then(m => m.ReservationsReportComponent)
-      },
-      { path: 'guest-billing', component: PlaceholderComponent, title: 'Gastspieler-Abrechnung' }
+      }
     ]
   }
 ];
