@@ -66,7 +66,7 @@ public sealed class CancelReservationHandler(
         var localStart = ClubTimeZone.LocalDateTime(r.StartsAt);
         var localEnd = ClubTimeZone.LocalDateTime(r.EndsAt);
 
-        var html = await templates.RenderAsync("booking-cancellation", new
+        var rendered = await templates.RenderEmailAsync("booking-cancellation", new
         {
             FirstName = ctx.FirstName,
             CourtName = ctx.CourtName,
@@ -76,6 +76,8 @@ public sealed class CancelReservationHandler(
         }, ct);
 
         await email.EnqueueAsync(
-            new EmailMessage(ctx.Email!, "Stornierungsbestätigung", html), ct);
+            new EmailMessage(ctx.Email!, "Stornierungsbestätigung",
+                rendered.Html, rendered.Plain),
+            ct);
     }
 }

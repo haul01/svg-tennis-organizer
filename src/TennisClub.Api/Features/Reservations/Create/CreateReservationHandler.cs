@@ -102,7 +102,7 @@ public sealed class CreateReservationHandler(
         var localStart = ClubTimeZone.LocalDateTime(r.StartsAt);
         var localEnd = ClubTimeZone.LocalDateTime(r.EndsAt);
 
-        var html = await templates.RenderAsync("booking-confirmation", new
+        var rendered = await templates.RenderEmailAsync("booking-confirmation", new
         {
             FirstName = ctx.FirstName,
             CourtName = ctx.CourtName,
@@ -114,6 +114,8 @@ public sealed class CreateReservationHandler(
         }, ct);
 
         await email.EnqueueAsync(
-            new EmailMessage(ctx.Email!, "Buchungsbestätigung", html), ct);
+            new EmailMessage(ctx.Email!, "Buchungsbestätigung",
+                rendered.Html, rendered.Plain),
+            ct);
     }
 }

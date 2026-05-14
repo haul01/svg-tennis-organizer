@@ -1,0 +1,13 @@
+Hallo {{ first_name }},
+
+deine Reservierung wurde storniert:
+
+  Platz:    {{ court_name }}
+  Datum:    {{ date_label }}
+  Uhrzeit:  {{ time_label }}
+
+Der Slot wurde wieder freigegeben und steht anderen Mitgliedern zur
+Verfügung.
+
+Sportliche Grüße
+Dein TennisClub

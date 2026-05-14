@@ -54,14 +54,15 @@ public sealed class CreateMemberHandler(
         // Best-effort: a failed mail must not undo the member creation.
         try
         {
-            var html = await templates.RenderAsync("welcome", new
+            var rendered = await templates.RenderEmailAsync("welcome", new
             {
                 FirstName = member.FirstName,
                 SetPasswordUrl = setPasswordUrl
             }, ct);
 
             await email.EnqueueAsync(
-                new EmailMessage(member.Email!, "Willkommen im TennisClub", html),
+                new EmailMessage(member.Email!, "Willkommen im TennisClub",
+                    rendered.Html, rendered.Plain),
                 ct);
         }
         catch { /* dispatcher logs the failure */ }

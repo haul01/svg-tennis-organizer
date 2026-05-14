@@ -29,7 +29,7 @@ public sealed class TriggerPasswordResetHandler(
 
         try
         {
-            var html = await templates.RenderAsync("password-reset", new
+            var rendered = await templates.RenderEmailAsync("password-reset", new
             {
                 FirstName = user.FirstName,
                 ResetUrl = url,
@@ -37,7 +37,9 @@ public sealed class TriggerPasswordResetHandler(
             }, ct);
 
             await email.EnqueueAsync(
-                new EmailMessage(user.Email!, "Passwort zurücksetzen", html), ct);
+                new EmailMessage(user.Email!, "Passwort zurücksetzen",
+                    rendered.Html, rendered.Plain),
+                ct);
         }
         catch { /* dispatcher logs the failure */ }
 

@@ -1,0 +1,19 @@
+Hallo {{ first_name }},
+
+deine Reservierung ist bestätigt:
+
+  Platz:    {{ court_name }}
+  Datum:    {{ date_label }}
+  Uhrzeit:  {{ time_label }}
+{{ if has_guest -}}
+  Gastspieler: {{ if guest_name }}{{ guest_name }}{{ else }}vermerkt{{ end }}
+{{- end }}
+
+{{ if has_guest -}}
+Bitte vergiss nicht, die Gastspielergebühr im Vereinsheim zu entrichten.
+
+{{ end -}}
+Stornierung möglich unter „Meine Buchungen" in der App.
+
+Sportliche Grüße
+Dein TennisClub

@@ -49,6 +49,70 @@ EOF
 
 Browser einmal hart neu laden (Strg+Shift+R), kein Container-Restart nötig.
 
+## Mail-Versand (Brevo)
+
+Solange `SMTP_HOST` in `deploy/.env` leer ist, schreibt die API jeden
+Mail-Versand nur in den Container-Log (`LoggingEmailSender`). Für echten
+Versand brauchst du einen SMTP-Relay — wir empfehlen Brevo (300
+Mails/Tag gratis, EU-gehostet, GDPR-konform).
+
+### 1. Brevo-Account + Domain verifizieren
+
+1. Account anlegen auf https://www.brevo.com (kostenlos)
+2. **Senders, Domains & Dedicated IPs → Domains → Add a domain**: deine
+   Vereinsdomain eintragen (`tennisverein.at`)
+3. Brevo zeigt drei DNS-Einträge:
+   - `brevo-code._domainkey.<domain>` (DKIM, CNAME)
+   - SPF-TXT — `v=spf1 include:spf.brevo.com ~all`
+   - DMARC-TXT — `v=DMARC1; p=none; rua=mailto:dmarc@<domain>` (Start)
+4. DNS-Einträge bei deinem Provider setzen, in Brevo auf **Verify**
+   warten (kann 5 min bis 1 h dauern)
+5. **Settings → SMTP & API → SMTP**: SMTP-Login + Master-Key generieren.
+   Beides notieren — wir tragen es gleich in `.env` ein.
+
+### 2. `.env` auf der Pi befüllen
+
+```ini
+SMTP_HOST=smtp-relay.brevo.com
+SMTP_PORT=587
+SMTP_USERNAME=<brevo-smtp-login>
+SMTP_PASSWORD=<brevo-master-key>
+SMTP_FROM_NAME=TennisClub
+SMTP_FROM_ADDRESS=reservierung@tennisverein.at
+```
+
+Die `FROM_ADDRESS` muss zur in Brevo verifizierten Domain gehören —
+sonst lehnt der Relay die Mail ab (`550 5.7.1`).
+
+### 3. Stack neu starten
+
+```bash
+ssh pi@<host> 'cd /opt/tennisclub/deploy && ./update.sh'
+```
+
+Die API erkennt `SMTP_HOST` und schaltet automatisch von
+`LoggingEmailSender` auf `SmtpEmailSender` um.
+
+### 4. Smoke-Test
+
+Admin-Token besorgen (aus Browser nach Login: `localStorage.getItem('accessToken')`)
+und dann:
+
+```bash
+curl -X POST https://tennis.deinedomain.at/api/admin/diag/test-email \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"to": "selbsttest@dein-postfach.at"}'
+```
+
+- `204 No Content` → Versand hat funktioniert, Inbox prüfen (auch Spam!)
+- `400` mit `SMTP-Versand fehlgeschlagen: ...` → SMTP-Fehler steht im
+  Response-Body. Häufige Ursachen: falsches Passwort, FROM-Adresse
+  nicht in Brevo verifiziert, Port 587 von der Pi-IP nicht erreichbar.
+
+Erstmail an verschiedene Provider testen (Gmail, GMX, Outlook,
+selbst-gehostet), Spam-Ordner checken, Deliverability bewerten.
+
 ## Cloudflare Tunnel (TLS + Public Access)
 
 Tunnel-Daemon installieren und mit dem Token aus dem Cloudflare-Zero-Trust-Dashboard registrieren:

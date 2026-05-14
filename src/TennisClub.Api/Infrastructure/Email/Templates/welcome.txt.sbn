@@ -1,0 +1,14 @@
+Willkommen, {{ first_name }}!
+
+Ein Administrator hat ein Konto für dich im TennisClub angelegt.
+
+Klicke den folgenden Link, um dein Passwort zu setzen und dich zum
+ersten Mal anzumelden:
+
+{{ set_password_url }}
+
+Der Link ist 24 Stunden gültig. Falls du kein Konto bei uns erwartet
+hast, ignoriere diese Nachricht.
+
+Sportliche Grüße
+Dein TennisClub

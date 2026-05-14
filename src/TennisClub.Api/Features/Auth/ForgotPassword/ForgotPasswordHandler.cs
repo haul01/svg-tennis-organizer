@@ -32,7 +32,7 @@ public sealed class ForgotPasswordHandler(
 
         try
         {
-            var html = await templates.RenderAsync("password-reset", new
+            var rendered = await templates.RenderEmailAsync("password-reset", new
             {
                 FirstName = user.FirstName,
                 ResetUrl = resetUrl,
@@ -40,7 +40,8 @@ public sealed class ForgotPasswordHandler(
             }, ct);
 
             await email.EnqueueAsync(
-                new EmailMessage(user.Email!, "Passwort zurücksetzen", html),
+                new EmailMessage(user.Email!, "Passwort zurücksetzen",
+                    rendered.Html, rendered.Plain),
                 ct);
         }
         catch
