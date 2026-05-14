@@ -18,6 +18,10 @@ import {
   MemberListItemDto,
   MemberRole
 } from '../../../core/models/member.model';
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogData
+} from '../../../shared/components/confirm-dialog.component';
 import { CreateMemberDialogComponent } from './create-member-dialog.component';
 
 type StatusFilter = 'all' | 'active' | 'inactive';
@@ -124,6 +128,53 @@ export class MembersListComponent {
           ?? 'Statusänderung nicht möglich.',
         'OK',
         { duration: 5000 }
+      );
+    }
+  }
+
+  async promoteToMember(m: MemberListItemDto): Promise<void> {
+    await this.changeRole(m, 'Member',
+      `${m.firstName} ${m.lastName} zum Vollmitglied befördern?`,
+      `${m.firstName} darf danach alle Plätze buchen und sieht den
+       Gast-Hinweis nicht mehr.`,
+      'Befördern');
+  }
+
+  async demoteToGuest(m: MemberListItemDto): Promise<void> {
+    await this.changeRole(m, 'Guest',
+      `${m.firstName} ${m.lastName} auf Gast zurückstufen?`,
+      `${m.firstName} darf danach nur noch für Gäste freigegebene Plätze
+       buchen. Bestehende Buchungen bleiben erhalten.`,
+      'Zurückstufen');
+  }
+
+  private async changeRole(
+    m: MemberListItemDto,
+    role: MemberRole,
+    title: string,
+    message: string,
+    confirmLabel: string
+  ): Promise<void> {
+    const confirmed = await firstValueFrom(this.dialog.open<
+      ConfirmDialogComponent, ConfirmDialogData, boolean
+    >(ConfirmDialogComponent, {
+      data: { title, message, confirmLabel, cancelLabel: 'Abbrechen' },
+      width: '440px',
+      maxWidth: '95vw'
+    }).afterClosed());
+
+    if (!confirmed) return;
+
+    try {
+      const updated = await firstValueFrom(this.api.changeRole(m.id, role));
+      this.members.update(list => list.map(it => it.id === updated.id ? updated : it));
+      this.snackBar.open(`Rolle geändert: ${updated.role}.`, 'OK', { duration: 3000 });
+    } catch (err: unknown) {
+      this.snackBar.open(
+        (err as { error?: { error?: string } })?.error?.error
+          ?? 'Rollenwechsel nicht möglich.',
+        'OK',
+        { duration: 6000 }
       );
     }
   }

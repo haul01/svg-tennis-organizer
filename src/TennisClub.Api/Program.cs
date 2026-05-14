@@ -11,6 +11,7 @@ using TennisClub.Api.Domain.Entities;
 using TennisClub.Api.Features.Admin.Diag.SendTestEmail;
 using TennisClub.Api.Features.Auth.ForgotPassword;
 using TennisClub.Api.Features.Auth.Login;
+using TennisClub.Api.Features.Auth.Register;
 using TennisClub.Api.Features.Auth.Logout;
 using TennisClub.Api.Features.Auth.Refresh;
 using TennisClub.Api.Features.Auth.ResetPassword;
@@ -26,6 +27,7 @@ using TennisClub.Api.Features.CourtBlocks.ListForWeek;
 using TennisClub.Api.Features.CourtBlocks.Shared;
 using TennisClub.Api.Features.GuestPlayers.Create;
 using TennisClub.Api.Features.GuestPlayers.ListForMember;
+using TennisClub.Api.Features.Members.ChangeRole;
 using TennisClub.Api.Features.Members.Create;
 using TennisClub.Api.Features.Members.Get;
 using TennisClub.Api.Features.Members.List;
@@ -133,6 +135,20 @@ builder.Services.AddRateLimiter(opts =>
                 QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                 QueueLimit = 0
             }));
+
+    // Guest self-registration: each new account triggers a welcome mail
+    // through Brevo's 300-mails/day quota, so cap per IP to keep a single
+    // source from draining the quota.
+    opts.AddPolicy("auth-register", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 3,
+                Window = TimeSpan.FromHours(1),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            }));
 });
 
 // Feature slice handlers.
@@ -140,6 +156,7 @@ builder.Services.AddScoped<LoginHandler>();
 builder.Services.AddScoped<RefreshHandler>();
 builder.Services.AddScoped<LogoutHandler>();
 builder.Services.AddScoped<ForgotPasswordHandler>();
+builder.Services.AddScoped<RegisterHandler>();
 builder.Services.AddScoped<ResetPasswordHandler>();
 builder.Services.AddScoped<CreateReservationHandler>();
 builder.Services.AddScoped<CancelReservationHandler>();
@@ -159,6 +176,7 @@ builder.Services.AddScoped<CreateMemberHandler>();
 builder.Services.AddScoped<UpdateMemberHandler>();
 builder.Services.AddScoped<SetActiveHandler>();
 builder.Services.AddScoped<TriggerPasswordResetHandler>();
+builder.Services.AddScoped<ChangeRoleHandler>();
 builder.Services.AddScoped<UpdateSettingsHandler>();
 builder.Services.AddScoped<UpdateSeasonHandler>();
 builder.Services.AddScoped<CreateCourtHandler>();

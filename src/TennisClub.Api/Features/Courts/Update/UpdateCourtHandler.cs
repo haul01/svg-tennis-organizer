@@ -15,9 +15,11 @@ public sealed class UpdateCourtHandler(AppDbContext db)
         court.Name = req.Name.Trim();
         court.DisplayOrder = req.DisplayOrder;
         court.IsActive = req.IsActive;
+        court.IsGuestBookable = req.IsGuestBookable;
 
         await db.SaveChangesAsync(ct);
 
-        return Result.Success(new CourtDto(court.Id, court.Name, court.DisplayOrder, court.IsActive));
+        return Result.Success(new CourtDto(
+            court.Id, court.Name, court.DisplayOrder, court.IsActive, court.IsGuestBookable));
     }
 }

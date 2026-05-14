@@ -10,6 +10,10 @@ public class CourtConfiguration : IEntityTypeConfiguration<Court>
     {
         builder.Property(c => c.Name).HasMaxLength(50).IsRequired();
 
+        // Existing rows added before the guest-bookable feature default
+        // to closed-for-guests; admin opts in per court via the UI.
+        builder.Property(c => c.IsGuestBookable).HasDefaultValue(false);
+
         builder.HasIndex(c => c.DisplayOrder);
     }
 }

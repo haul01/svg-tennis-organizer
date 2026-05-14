@@ -53,7 +53,8 @@ export class CourtDialogComponent {
   readonly form = this.fb.nonNullable.group({
     name: [this.data.court?.name ?? '', [Validators.required, Validators.maxLength(50)]],
     displayOrder: this.fb.control<number | null>(this.data.court?.displayOrder ?? null),
-    isActive: [this.data.court?.isActive ?? true]
+    isActive: [this.data.court?.isActive ?? true],
+    isGuestBookable: [this.data.court?.isGuestBookable ?? false]
   });
 
   cancel(): void { this.ref.close(null); }
@@ -72,11 +73,13 @@ export class CourtDialogComponent {
         ? await firstValueFrom(this.api.update(court.id, {
             name: raw.name,
             displayOrder: raw.displayOrder ?? court.displayOrder,
-            isActive: raw.isActive
+            isActive: raw.isActive,
+            isGuestBookable: raw.isGuestBookable
           }))
         : await firstValueFrom(this.api.create({
             name: raw.name,
-            displayOrder: raw.displayOrder
+            displayOrder: raw.displayOrder,
+            isGuestBookable: raw.isGuestBookable
           }));
       this.ref.close(saved);
     } catch (err) {

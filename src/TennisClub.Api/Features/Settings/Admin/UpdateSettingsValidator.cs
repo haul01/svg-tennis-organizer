@@ -21,5 +21,10 @@ public sealed class UpdateSettingsValidator : AbstractValidator<UpdateSettingsRe
         RuleFor(x => x.MaxSlotsPerBooking)
             .InclusiveBetween(1, 8)
             .WithMessage("Maximale Slots pro Buchung müssen zwischen 1 und 8 liegen.");
+
+        RuleFor(x => x.GuestMembershipPromptText)
+            .NotEmpty().WithMessage("Der Gast-Hinweistext darf nicht leer sein.")
+            .MaximumLength(2000)
+            .WithMessage("Der Gast-Hinweistext darf maximal 2000 Zeichen lang sein.");
     }
 }

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="de">
+<head><meta charset="UTF-8"></head>
+<body style="font-family: Arial, sans-serif; color: #0b1c30; line-height: 1.6;">
+  <h1 style="color: #0a192f;">Willkommen, {{ first_name }}!</h1>
+
+  <p>schön, dass du dich als Gast bei uns registriert hast.</p>
+
+  <p>Klicke den folgenden Link, um dein Passwort zu setzen und dich
+     zum ersten Mal anzumelden:</p>
+
+  <p style="margin: 24px 0;">
+    <a href="{{ set_password_url }}"
+       style="background: #0a192f; color: #ffffff; padding: 12px 24px;
+              text-decoration: none; border-radius: 8px;
+              display: inline-block;">
+      Passwort setzen und einloggen
+    </a>
+  </p>
+
+  <p style="color: #44474d; font-size: 14px;">
+    Der Link ist 24 Stunden gültig. Falls du dich nicht selbst
+    registriert hast, ignoriere diese Nachricht — wir haben dir nichts
+    eingerichtet ohne deinen Klick.
+  </p>
+
+  <p style="background: #eff4ff; border-left: 3px solid #0a192f;
+            padding: 12px 16px; color: #0b1c30; margin: 20px 0;">
+    <strong>Hinweis:</strong> Als Gast kannst du eine Auswahl unserer
+    Plätze buchen. Falls du häufiger spielen möchtest, freuen wir uns
+    auf deine Vereinsmitgliedschaft — sprich uns gerne an oder
+    antworte direkt auf diese Mail.
+  </p>
+
+  <p style="margin-top: 32px;">Sportliche Grüße<br>Dein TennisClub</p>
+</body>
+</html>

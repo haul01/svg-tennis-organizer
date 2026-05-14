@@ -167,6 +167,22 @@ tbody td {
   border-radius: var(--tc-radius-full);
   background: var(--tc-surface-container);
   color: var(--tc-on-surface-variant);
+
+  &--admin {
+    background: var(--tc-deep-navy);
+    color: var(--tc-surface-container-lowest);
+  }
+  &--trainer {
+    background: rgba(193, 255, 34, 0.22);
+    color: #2f5a00;
+  }
+  &--member {
+    // default look already fits "regular" member rows
+  }
+  &--guest {
+    background: #fff4e5;
+    color: #7c2d12;
+  }
 }
 
 .status {

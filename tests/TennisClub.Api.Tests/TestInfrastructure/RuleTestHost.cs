@@ -35,9 +35,18 @@ public sealed class RuleTestHost : IAsyncDisposable
         Db.Database.EnsureCreated();
     }
 
-    public Court AddCourt(int id = 1, string name = "Platz 1", bool active = true)
+    public Court AddCourt(
+        int id = 1, string name = "Platz 1", bool active = true,
+        bool guestBookable = false)
     {
-        var c = new Court { Id = id, Name = name, DisplayOrder = id, IsActive = active };
+        var c = new Court
+        {
+            Id = id,
+            Name = name,
+            DisplayOrder = id,
+            IsActive = active,
+            IsGuestBookable = guestBookable
+        };
         Db.Courts.Add(c);
         Db.SaveChanges();
         return c;

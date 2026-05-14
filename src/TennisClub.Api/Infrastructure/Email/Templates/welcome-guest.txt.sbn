@@ -1,0 +1,20 @@
+Willkommen, {{ first_name }}!
+
+schön, dass du dich als Gast bei uns registriert hast.
+
+Klicke den folgenden Link, um dein Passwort zu setzen und dich zum
+ersten Mal anzumelden:
+
+{{ set_password_url }}
+
+Der Link ist 24 Stunden gültig. Falls du dich nicht selbst registriert
+hast, ignoriere diese Nachricht — wir haben dir nichts eingerichtet
+ohne deinen Klick.
+
+Hinweis: Als Gast kannst du eine Auswahl unserer Plätze buchen. Falls
+du häufiger spielen möchtest, freuen wir uns auf deine
+Vereinsmitgliedschaft — sprich uns gerne an oder antworte direkt auf
+diese Mail.
+
+Sportliche Grüße
+Dein TennisClub

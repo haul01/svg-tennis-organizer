@@ -12,7 +12,8 @@ public sealed class ListCourtsHandler(AppDbContext db)
 
         return query
             .OrderBy(c => c.DisplayOrder)
-            .Select(c => new CourtDto(c.Id, c.Name, c.DisplayOrder, c.IsActive))
+            .Select(c => new CourtDto(
+                c.Id, c.Name, c.DisplayOrder, c.IsActive, c.IsGuestBookable))
             .ToListAsync(ct);
     }
 }

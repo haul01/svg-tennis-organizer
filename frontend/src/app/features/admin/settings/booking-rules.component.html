@@ -152,6 +152,36 @@
           Beispiel: „4" + 30-Minuten-Slots = bis zu 2 Stunden Buchung.
         </p>
       </section>
+
+      <section class="card card--wide">
+        <header class="card__header">
+          <mat-icon fontSet="material-symbols-outlined">favorite</mat-icon>
+          <h2>Hinweistext für Gäste</h2>
+        </header>
+        <p class="card__description">
+          Wird Gästen im Buchungsdialog freundlich angezeigt — z.B. mit
+          dem Vorschlag, Vereinsmitglied zu werden. Mitglieder sehen
+          diesen Text nicht.
+        </p>
+        <mat-form-field appearance="outline">
+          <mat-label>Hinweistext</mat-label>
+          <textarea
+            matInput
+            rows="5"
+            maxlength="2000"
+            formControlName="guestMembershipPromptText"
+          ></textarea>
+          <mat-hint align="end">
+            {{ form.controls.guestMembershipPromptText.value.length }} / 2000
+          </mat-hint>
+          @if (form.controls.guestMembershipPromptText.hasError('required')) {
+            <mat-error>Der Hinweistext darf nicht leer sein.</mat-error>
+          }
+          @if (form.controls.guestMembershipPromptText.hasError('maxlength')) {
+            <mat-error>Maximal 2000 Zeichen.</mat-error>
+          }
+        </mat-form-field>
+      </section>
     </form>
 
     @if (errorMessage(); as msg) {

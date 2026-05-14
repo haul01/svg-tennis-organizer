@@ -86,6 +86,25 @@ public sealed class AuthTestHost : IAsyncDisposable
         db.Database.EnsureCreated();
     }
 
+    /// <summary>
+    /// Pre-creates the four production roles (Admin, Trainer, Member, Guest)
+    /// so handlers that switch roles can find them. Idempotent.
+    /// </summary>
+    public async Task EnsureAllRolesAsync()
+    {
+        using var scope = Services.CreateScope();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+        foreach (var r in new[]
+        {
+            SeedData.AdminRole, SeedData.TrainerRole,
+            SeedData.MemberRole, SeedData.GuestRole
+        })
+        {
+            if (!await roleManager.RoleExistsAsync(r))
+                await roleManager.CreateAsync(new IdentityRole<Guid>(r));
+        }
+    }
+
     public async Task<Member> SeedMemberAsync(
         string email = "member@tennisclub.local",
         string password = "Member123!",

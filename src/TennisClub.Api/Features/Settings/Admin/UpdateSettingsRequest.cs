@@ -4,4 +4,5 @@ public sealed record UpdateSettingsRequest(
     int MaxAdvanceBookingDays,
     int MinCancellationHours,
     int MaxOpenReservationsPerMember,
-    int MaxSlotsPerBooking);
+    int MaxSlotsPerBooking,
+    string GuestMembershipPromptText);

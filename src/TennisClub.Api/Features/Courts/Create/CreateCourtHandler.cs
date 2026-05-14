@@ -20,11 +20,13 @@ public sealed class CreateCourtHandler(AppDbContext db)
         {
             Name = req.Name.Trim(),
             DisplayOrder = order,
-            IsActive = true
+            IsActive = true,
+            IsGuestBookable = req.IsGuestBookable
         };
         db.Courts.Add(court);
         await db.SaveChangesAsync(ct);
 
-        return Result.Success(new CourtDto(court.Id, court.Name, court.DisplayOrder, court.IsActive));
+        return Result.Success(new CourtDto(
+            court.Id, court.Name, court.DisplayOrder, court.IsActive, court.IsGuestBookable));
     }
 }

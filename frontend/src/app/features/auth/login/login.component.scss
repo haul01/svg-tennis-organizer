@@ -89,6 +89,22 @@
   }
 }
 
+.alt-link {
+  @include tc-label-sm;
+  text-align: center;
+  margin-top: var(--tc-space-md);
+  color: var(--tc-on-surface-variant);
+
+  a {
+    color: var(--tc-deep-navy);
+    font-weight: 600;
+    text-decoration: none;
+    margin-left: var(--tc-space-base);
+
+    &:hover { text-decoration: underline; }
+  }
+}
+
 .error-banner {
   display: flex;
   align-items: center;

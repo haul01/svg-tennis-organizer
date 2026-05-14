@@ -33,6 +33,7 @@
             <th scope="col">Reihenfolge</th>
             <th scope="col">Name</th>
             <th scope="col">Status</th>
+            <th scope="col">Gäste</th>
             <th scope="col" class="actions-col">Aktionen</th>
           </tr>
         </thead>
@@ -50,6 +51,23 @@
                   <span class="dot" aria-hidden="true"></span>
                   {{ c.isActive ? 'Aktiv' : 'Inaktiv' }}
                 </span>
+              </td>
+              <td>
+                @if (c.isGuestBookable) {
+                  <span
+                    class="badge badge--guest"
+                    title="Für Gastbuchungen freigegeben"
+                  >
+                    <mat-icon fontSet="material-symbols-outlined">person_check</mat-icon>
+                    freigegeben
+                  </span>
+                } @else {
+                  <span class="badge badge--restricted"
+                        title="Nur für Mitglieder">
+                    <mat-icon fontSet="material-symbols-outlined">lock</mat-icon>
+                    nur Mitglieder
+                  </span>
+                }
               </td>
               <td class="actions-col">
                 <button

@@ -6,4 +6,11 @@ public class Court
     public string Name { get; set; } = null!;
     public int DisplayOrder { get; set; }
     public bool IsActive { get; set; } = true;
+
+    /// <summary>
+    /// When true, members with role Guest may book this court. Default
+    /// false - admins explicitly opt courts in (typically Platz 3/4) so
+    /// existing seeds stay restrictive after migration.
+    /// </summary>
+    public bool IsGuestBookable { get; set; }
 }

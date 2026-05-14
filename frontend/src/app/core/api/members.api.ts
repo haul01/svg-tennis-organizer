@@ -8,6 +8,7 @@ import {
   ListMembersOptions,
   MemberDetailDto,
   MemberListItemDto,
+  MemberRole,
   UpdateMemberRequest
 } from '../models/member.model';
 
@@ -45,5 +46,12 @@ export class MembersApi {
 
   triggerPasswordReset(id: string): Observable<void> {
     return this.http.post<void>(`${this.baseUrl}/${id}/reset-password`, {});
+  }
+
+  changeRole(id: string, role: MemberRole): Observable<MemberDetailDto> {
+    return this.http.post<MemberDetailDto>(
+      `${this.baseUrl}/${id}/role`,
+      { role }
+    );
   }
 }

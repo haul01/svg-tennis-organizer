@@ -23,6 +23,16 @@
         </mat-slide-toggle>
       </div>
     }
+
+    <div class="toggle">
+      <mat-slide-toggle color="primary" formControlName="isGuestBookable">
+        Für Gastbuchungen freigegeben
+      </mat-slide-toggle>
+      <p class="toggle__hint">
+        Gäste (selbst registrierte Accounts) dürfen diesen Platz nur
+        buchen, wenn diese Option aktiv ist.
+      </p>
+    </div>
   </form>
 
   @if (errorMessage(); as msg) {

@@ -166,6 +166,11 @@ namespace TennisClub.Api.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsGuestBookable")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -457,6 +462,13 @@ namespace TennisClub.Api.Migrations
                 {
                     b.Property<int>("Id")
                         .HasColumnType("integer");
+
+                    b.Property<string>("GuestMembershipPromptText")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasDefaultValue("Schön, dass du bei uns spielst! Hast du schon überlegt, Vereinsmitglied zu werden? Als Mitglied kannst du alle Plätze buchen, hast bessere Buchungsbedingungen und unterstützt damit unseren Verein. Wir freuen uns über jede neue Mitgliedschaft!");
 
                     b.Property<int>("MaxAdvanceBookingDays")
                         .HasColumnType("integer");

@@ -16,6 +16,11 @@ import { addDays, endOfDay, format, startOfDay, startOfWeek } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { firstValueFrom } from 'rxjs';
 
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogData
+} from '../../../shared/components/confirm-dialog.component';
+
 import { CourtBlocksApi } from '../../../core/api/court-blocks.api';
 import { CourtsApi } from '../../../core/api/courts.api';
 import { SeasonsApi } from '../../../core/api/seasons.api';
@@ -292,7 +297,8 @@ export class WeekGridComponent {
       courtName: court?.name ?? `Platz ${cell.courtId}`,
       startsAt: cell.startsAt,
       slotMinutes: season.slotDurationMinutes,
-      maxSlots: this.settings()?.maxSlotsPerBooking ?? 4
+      maxSlots: this.settings()?.maxSlotsPerBooking ?? 4,
+      guestMembershipPromptText: this.settings()?.guestMembershipPromptText ?? ''
     };
 
     const ref = this.dialog.open<
@@ -315,11 +321,38 @@ export class WeekGridComponent {
     });
   }
 
-  onTileClick(tile: BookingTile): void {
-    if (tile.state !== 'mine') return;
-    // Cancel dialog comes with task #126's follow-up - for now confirm
-    // that the tile click was registered so we don't fall through silently.
-    this.snackBar.open('Storno-Dialog kommt noch.', 'OK', { duration: 3000 });
+  async onTileClick(tile: BookingTile): Promise<void> {
+    // Only my own bookings are cancel-able from the grid. Foreign +
+    // blocked tiles have nothing to do on click.
+    if (tile.state !== 'mine' || !tile.reservation) return;
+
+    const dateLabel = format(tile.startsAt, 'EEEE, d. MMMM', { locale: de });
+    const timeRange = `${format(tile.startsAt, 'HH:mm')}–${format(tile.endsAt, 'HH:mm')}`;
+
+    const confirmed = await firstValueFrom(this.dialog.open<
+      ConfirmDialogComponent, ConfirmDialogData, boolean
+    >(ConfirmDialogComponent, {
+      data: {
+        title: 'Buchung stornieren?',
+        message: `Möchtest du deine Buchung am ${dateLabel} um ${timeRange} wirklich stornieren? Der Slot wird danach wieder freigegeben.`,
+        confirmLabel: 'Stornieren',
+        cancelLabel: 'Zurück',
+        destructive: true
+      },
+      width: '440px',
+      maxWidth: '95vw'
+    }).afterClosed());
+
+    if (!confirmed) return;
+
+    const result = await this.reservations.cancel(tile.reservation.id);
+    if (result.ok) {
+      // ReservationsService.cancel already drops the reservation from
+      // weekReservations(), so tiles() recomputes and the tile vanishes.
+      this.snackBar.open('Buchung storniert.', 'OK', { duration: 4000 });
+    } else {
+      this.snackBar.open(result.message, 'OK', { duration: 6000 });
+    }
   }
 
   private async bootstrap(): Promise<void> {

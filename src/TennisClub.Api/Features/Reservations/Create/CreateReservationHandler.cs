@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TennisClub.Api.Common.Exceptions;
 using TennisClub.Api.Common.Results;
@@ -13,6 +14,7 @@ namespace TennisClub.Api.Features.Reservations.Create;
 public sealed class CreateReservationHandler(
     AppDbContext db,
     BookingRuleEngine rules,
+    UserManager<Member> users,
     EmailQueue email,
     EmailTemplateRenderer templates,
     TimeProvider time)
@@ -33,7 +35,15 @@ public sealed class CreateReservationHandler(
             }
         }
 
-        var attempt = new BookingAttempt(memberId, req.CourtId, req.StartsAt, req.EndsAt);
+        // Load the booker's roles once so rules (e.g. CourtAllowsGuestRule)
+        // can decide in-memory rather than each hitting Identity tables.
+        var booker = await users.FindByIdAsync(memberId.ToString());
+        var roles = booker is null
+            ? Array.Empty<string>()
+            : (IReadOnlyCollection<string>)await users.GetRolesAsync(booker);
+
+        var attempt = new BookingAttempt(
+            memberId, req.CourtId, req.StartsAt, req.EndsAt, roles);
 
         // Layer 1: rule engine reports all violations in one shot.
         var failures = await rules.CheckAsync(attempt, ct);

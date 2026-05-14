@@ -24,6 +24,12 @@ form {
 
 .toggle {
   padding: var(--tc-space-xs) var(--tc-space-base);
+
+  &__hint {
+    @include tc-label-sm;
+    margin: var(--tc-space-base) 0 0;
+    color: var(--tc-on-surface-variant);
+  }
 }
 
 .error-banner {

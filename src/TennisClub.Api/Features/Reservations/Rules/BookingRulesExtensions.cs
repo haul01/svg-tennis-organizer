@@ -11,6 +11,7 @@ public static class BookingRulesExtensions
         services.AddScoped<IBookingRule, SlotIsWithinSeasonRule>();
         services.AddScoped<IBookingRule, SlotIsWithinOpeningHoursRule>();
         services.AddScoped<IBookingRule, CourtIsActiveRule>();
+        services.AddScoped<IBookingRule, CourtAllowsGuestRule>();
         services.AddScoped<IBookingRule, NoCourtBlockExistsRule>();
         services.AddScoped<IBookingRule, NoOverlappingReservationRule>();
         services.AddScoped<IBookingRule, MaxAdvanceBookingRule>();

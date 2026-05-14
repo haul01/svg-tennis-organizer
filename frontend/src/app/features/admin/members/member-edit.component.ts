@@ -54,7 +54,10 @@ export class MemberEditComponent {
   readonly errorMessage = signal<string | null>(null);
   readonly failures = signal<ValidationFailure[]>([]);
 
-  readonly availableRoles = MEMBER_ROLES;
+  // Guest is omitted on purpose: Guest <-> Member must use the dedicated
+  // /role endpoint (last-admin check + refresh-token revocation), surfaced
+  // as the up/down arrow buttons in the members list.
+  readonly availableRoles = MEMBER_ROLES.filter(r => r !== 'Guest');
 
   readonly createdAtLabel = computed(() => {
     const m = this.member();

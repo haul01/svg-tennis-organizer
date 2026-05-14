@@ -10,5 +10,11 @@ public class SystemSettingsConfiguration : IEntityTypeConfiguration<SystemSettin
     {
         // Single-row table - Id is fixed at 1 so seed/update is deterministic.
         builder.Property(s => s.Id).ValueGeneratedNever();
+
+        builder.Property(s => s.GuestMembershipPromptText)
+            .HasMaxLength(2000)
+            // Column default so the migration backfills the existing single
+            // SystemSettings row with the friendly default instead of "".
+            .HasDefaultValue(SystemSettings.DefaultGuestMembershipPromptText);
     }
 }

@@ -10,6 +10,11 @@ export const authRoutes: Routes = [
   },
   { path: 'forgot-password', component: PlaceholderComponent, title: 'Passwort vergessen' },
   {
+    path: 'register',
+    title: 'Als Gast registrieren',
+    loadComponent: () => import('./register/register.component').then(m => m.RegisterComponent)
+  },
+  {
     path: 'set-password',
     title: 'Passwort setzen',
     loadComponent: () => import('./set-password/set-password.component').then(m => m.SetPasswordComponent)

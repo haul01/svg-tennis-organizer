@@ -1,6 +1,6 @@
-export type MemberRole = 'Admin' | 'Trainer' | 'Member';
+export type MemberRole = 'Admin' | 'Trainer' | 'Member' | 'Guest';
 
-export const MEMBER_ROLES: readonly MemberRole[] = ['Admin', 'Trainer', 'Member'];
+export const MEMBER_ROLES: readonly MemberRole[] = ['Admin', 'Trainer', 'Member', 'Guest'];
 
 export interface MemberListItemDto {
   id: string;

@@ -58,6 +58,14 @@
   border: 1px solid var(--tc-outline-variant);
   border-radius: var(--tc-radius-lg);
 
+  // Multi-line text fields need full-row width to stay readable.
+  &--wide { grid-column: 1 / -1; }
+
+  textarea {
+    resize: vertical;
+    min-height: 96px;
+  }
+
   &__header {
     display: flex;
     align-items: center;

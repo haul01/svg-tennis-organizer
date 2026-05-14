@@ -3,6 +3,7 @@ export interface PublicSettingsDto {
   minCancellationHours: number;
   maxOpenReservationsPerMember: number;
   maxSlotsPerBooking: number;
+  guestMembershipPromptText: string;
 }
 
 export interface UpdateSettingsRequest {
@@ -10,4 +11,5 @@ export interface UpdateSettingsRequest {
   minCancellationHours: number;
   maxOpenReservationsPerMember: number;
   maxSlotsPerBooking: number;
+  guestMembershipPromptText: string;
 }

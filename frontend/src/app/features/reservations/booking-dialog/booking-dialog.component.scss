@@ -154,6 +154,36 @@ mat-dialog-content {
   }
 }
 
+// Friendly nudge shown to Guest-role users only. Sits below the form
+// inputs and above the action bar.
+.membership-prompt {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--tc-space-sm);
+  margin: 0;
+  padding: var(--tc-space-sm) var(--tc-space-md);
+  background: var(--tc-surface-container-low);
+  border: 1px solid var(--tc-outline-variant);
+  border-radius: var(--tc-radius-lg);
+  border-left: 3px solid var(--tc-tennis-green);
+
+  mat-icon {
+    color: var(--tc-deep-navy);
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    font-variation-settings: 'FILL' 1;
+  }
+
+  p {
+    @include tc-body-md;
+    margin: 0;
+    color: var(--tc-on-surface);
+    line-height: 1.5;
+  }
+}
+
 mat-dialog-actions {
   padding: var(--tc-space-sm) var(--tc-space-md) var(--tc-space-md);
 }

@@ -18,6 +18,7 @@ public sealed class UpdateSettingsHandler(AppDbContext db)
         settings.MinCancellationHours = req.MinCancellationHours;
         settings.MaxOpenReservationsPerMember = req.MaxOpenReservationsPerMember;
         settings.MaxSlotsPerBooking = req.MaxSlotsPerBooking;
+        settings.GuestMembershipPromptText = req.GuestMembershipPromptText.Trim();
 
         await db.SaveChangesAsync(ct);
 
@@ -25,6 +26,7 @@ public sealed class UpdateSettingsHandler(AppDbContext db)
             settings.MaxAdvanceBookingDays,
             settings.MinCancellationHours,
             settings.MaxOpenReservationsPerMember,
-            settings.MaxSlotsPerBooking));
+            settings.MaxSlotsPerBooking,
+            settings.GuestMembershipPromptText));
     }
 }

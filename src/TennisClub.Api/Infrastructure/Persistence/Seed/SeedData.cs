@@ -10,6 +10,7 @@ public static class SeedData
     public const string AdminRole = "Admin";
     public const string TrainerRole = "Trainer";
     public const string MemberRole = "Member";
+    public const string GuestRole = "Guest";
 
     public static async Task RunAsync(IServiceProvider services, CancellationToken ct = default)
     {
@@ -31,7 +32,7 @@ public static class SeedData
 
     private static async Task EnsureRolesAsync(RoleManager<IdentityRole<Guid>> roleManager)
     {
-        foreach (var role in new[] { AdminRole, TrainerRole, MemberRole })
+        foreach (var role in new[] { AdminRole, TrainerRole, MemberRole, GuestRole })
         {
             if (!await roleManager.RoleExistsAsync(role))
             {

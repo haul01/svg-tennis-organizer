@@ -91,7 +91,15 @@
                 </div>
               </td>
               <td>{{ m.email }}</td>
-              <td><span class="role-pill">{{ m.role }}</span></td>
+              <td>
+                <span
+                  class="role-pill"
+                  [class.role-pill--admin]="m.role === 'Admin'"
+                  [class.role-pill--trainer]="m.role === 'Trainer'"
+                  [class.role-pill--member]="m.role === 'Member'"
+                  [class.role-pill--guest]="m.role === 'Guest'"
+                >{{ m.role }}</span>
+              </td>
               <td>
                 <span
                   class="status"
@@ -103,6 +111,27 @@
                 </span>
               </td>
               <td class="actions-col">
+                @if (m.role === 'Guest') {
+                  <button
+                    mat-icon-button
+                    type="button"
+                    aria-label="Zum Mitglied befördern"
+                    title="Zum Mitglied befördern"
+                    (click)="promoteToMember(m)"
+                  >
+                    <mat-icon fontSet="material-symbols-outlined">arrow_upward</mat-icon>
+                  </button>
+                } @else if (m.role === 'Member') {
+                  <button
+                    mat-icon-button
+                    type="button"
+                    aria-label="Auf Gast zurückstufen"
+                    title="Auf Gast zurückstufen"
+                    (click)="demoteToGuest(m)"
+                  >
+                    <mat-icon fontSet="material-symbols-outlined">arrow_downward</mat-icon>
+                  </button>
+                }
                 <a
                   mat-icon-button
                   [routerLink]="['/admin/members', m.id]"

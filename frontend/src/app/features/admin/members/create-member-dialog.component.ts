@@ -38,7 +38,9 @@ export class CreateMemberDialogComponent {
   readonly submitting = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly failures = signal<ValidationFailure[]>([]);
-  readonly availableRoles = MEMBER_ROLES;
+  // Admins create real members, trainers or fellow admins via this dialog;
+  // Guest accounts only come into existence via self-registration.
+  readonly availableRoles = MEMBER_ROLES.filter(r => r !== 'Guest');
 
   readonly form = this.fb.nonNullable.group({
     firstName: ['', [Validators.required, Validators.maxLength(100)]],

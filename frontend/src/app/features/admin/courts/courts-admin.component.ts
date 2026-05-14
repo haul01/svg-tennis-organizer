@@ -68,7 +68,8 @@ export class CourtsAdminComponent {
       await firstValueFrom(this.api.update(c.id, {
         name: c.name,
         displayOrder: c.displayOrder,
-        isActive: !c.isActive
+        isActive: !c.isActive,
+        isGuestBookable: c.isGuestBookable
       }));
       this.snackBar.open(
         !c.isActive ? 'Platz aktiviert.' : 'Platz deaktiviert.',

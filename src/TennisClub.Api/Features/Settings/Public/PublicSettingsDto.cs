@@ -4,4 +4,5 @@ public sealed record PublicSettingsDto(
     int MaxAdvanceBookingDays,
     int MinCancellationHours,
     int MaxOpenReservationsPerMember,
-    int MaxSlotsPerBooking);
+    int MaxSlotsPerBooking,
+    string GuestMembershipPromptText);

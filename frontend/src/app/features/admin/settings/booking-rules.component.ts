@@ -40,7 +40,11 @@ export class BookingRulesComponent {
     maxAdvanceBookingDays: [7, [Validators.required, Validators.min(1), Validators.max(365)]],
     minCancellationHours: [0, [Validators.required, Validators.min(0), Validators.max(168)]],
     maxOpenReservationsPerMember: [2, [Validators.required, Validators.min(1), Validators.max(20)]],
-    maxSlotsPerBooking: [4, [Validators.required, Validators.min(1), Validators.max(8)]]
+    maxSlotsPerBooking: [4, [Validators.required, Validators.min(1), Validators.max(8)]],
+    guestMembershipPromptText: [
+      '',
+      [Validators.required, Validators.maxLength(2000)]
+    ]
   });
 
   constructor() {

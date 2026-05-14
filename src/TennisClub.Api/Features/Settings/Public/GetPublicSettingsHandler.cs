@@ -12,6 +12,7 @@ public sealed class GetPublicSettingsHandler(AppDbContext db)
             settings.MaxAdvanceBookingDays,
             settings.MinCancellationHours,
             settings.MaxOpenReservationsPerMember,
-            settings.MaxSlotsPerBooking);
+            settings.MaxSlotsPerBooking,
+            settings.GuestMembershipPromptText);
     }
 }

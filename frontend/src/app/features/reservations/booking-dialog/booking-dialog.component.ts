@@ -12,6 +12,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 
+import { AuthService } from '../../../core/auth/auth.service';
 import { ValidationFailure } from '../../../core/models/result.model';
 import { ReservationsService } from '../reservations.service';
 
@@ -21,6 +22,11 @@ export interface BookingDialogData {
   startsAt: Date;
   slotMinutes: number;
   maxSlots: number;
+  /**
+   * Admin-configured nudge shown only to Guest-role bookers. Empty
+   * string disables the prompt entirely.
+   */
+  guestMembershipPromptText: string;
 }
 
 export type BookingDialogResult = { ok: true; id: string } | null;
@@ -46,6 +52,7 @@ interface DurationOption {
 })
 export class BookingDialogComponent {
   private readonly reservations = inject(ReservationsService);
+  private readonly auth = inject(AuthService);
   private readonly dialogRef = inject(MatDialogRef<BookingDialogComponent, BookingDialogResult>);
 
   readonly data = inject<BookingDialogData>(MAT_DIALOG_DATA);
@@ -54,6 +61,14 @@ export class BookingDialogComponent {
   readonly errorMessage = signal<string | null>(null);
   readonly ruleFailures = signal<ValidationFailure[]>([]);
   readonly hasGuest = signal(false);
+
+  // Show the membership prompt only when (a) the current session is a
+  // Guest and (b) the admin has actually configured prompt text.
+  readonly showMembershipPrompt = computed(() => {
+    const user = this.auth.currentUser();
+    const isGuest = user?.roles.includes('Guest') ?? false;
+    return isGuest && this.data.guestMembershipPromptText.trim().length > 0;
+  });
 
   // Default to ~2 h (4 slots for 30 min, 2 slots for 60 min); never
   // exceed the admin-configured cap.

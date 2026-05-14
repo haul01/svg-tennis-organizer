@@ -53,6 +53,13 @@
     </div>
   }
 
+  @if (showMembershipPrompt()) {
+    <aside class="membership-prompt" role="note">
+      <mat-icon fontSet="material-symbols-outlined">favorite</mat-icon>
+      <p>{{ data.guestMembershipPromptText }}</p>
+    </aside>
+  }
+
   @if (errorMessage(); as msg) {
     <div class="error-banner" role="alert">
       <mat-icon fontSet="material-symbols-outlined">error</mat-icon>

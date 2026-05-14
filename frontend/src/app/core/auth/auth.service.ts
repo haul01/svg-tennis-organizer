@@ -30,6 +30,19 @@ export class AuthService {
     );
   }
 
+  /**
+   * Public guest self-registration. Body intentionally has no password -
+   * the backend creates the account inactive-until-set-password and
+   * sends a welcome mail with a set-password token link. Response is
+   * always 200 OK regardless of whether the address was new or taken
+   * (enumeration protection mirrored from forgot-password).
+   */
+  register(email: string, firstName: string, lastName: string): Observable<void> {
+    return this.http
+      .post<{ message: string }>(`${this.baseUrl}/register`, { email, firstName, lastName })
+      .pipe(map(() => void 0));
+  }
+
   resetPassword(email: string, token: string, newPassword: string): Observable<void> {
     return this.http
       .post<void>(`${this.baseUrl}/reset-password`, { email, token, newPassword })
