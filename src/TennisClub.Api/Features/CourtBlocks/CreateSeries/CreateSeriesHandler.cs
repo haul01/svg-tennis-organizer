@@ -9,18 +9,23 @@ namespace TennisClub.Api.Features.CourtBlocks.CreateSeries;
 public sealed class CreateSeriesHandler(
     AppDbContext db,
     BlockConflictChecker conflicts,
+    BlockCancellationNotifier notifier,
     TimeProvider time)
 {
     public async Task<Result<CreateSeriesResponse>> HandleAsync(
         CreateSeriesRequest req, Guid actorId, CancellationToken ct)
     {
-        var court = await db.Courts
-            .Where(c => c.Id == req.CourtId)
-            .Select(c => new { c.Name })
-            .FirstOrDefaultAsync(ct);
-        if (court is null) return Result.NotFound("Platz nicht gefunden.");
+        var targetCourts = await ResolveCourtsAsync(req, ct);
+        if (targetCourts is null) return Result.NotFound("Platz nicht gefunden.");
+        if (targetCourts.Count == 0)
+        {
+            return Result.Invalid(
+                "Keine aktiven Plätze vorhanden - Sperre kann nicht angelegt werden.");
+        }
 
-        var intervals = ExpandSeries(req);
+        // Expand (weeks x courts). All-courts mode multiplies the basic
+        // weekly expansion across every active court.
+        var intervals = ExpandSeries(req, targetCourts);
         if (intervals.Count == 0)
         {
             return Result.Invalid("Der gewählte Zeitraum enthält keinen passenden Wochentag.");
@@ -39,6 +44,7 @@ public sealed class CreateSeriesHandler(
         var now = time.GetUtcNow();
         if (overlaps.Count > 0) BlockConflictChecker.CancelAll(overlaps, now);
 
+        var reason = req.Reason.Trim();
         var seriesId = Guid.NewGuid();
         var blocks = intervals.Select(i => new CourtBlock
         {
@@ -46,7 +52,7 @@ public sealed class CreateSeriesHandler(
             CourtId = i.CourtId,
             StartsAt = i.StartsAt,
             EndsAt = i.EndsAt,
-            Reason = req.Reason.Trim(),
+            Reason = reason,
             SeriesId = seriesId,
             CreatedAt = now,
             CreatedByMemberId = actorId
@@ -55,10 +61,37 @@ public sealed class CreateSeriesHandler(
         db.CourtBlocks.AddRange(blocks);
         await db.SaveChangesAsync(ct);
 
+        // Best-effort: notify after persistence so mail failures don't
+        // roll back the (already saved) cancellations.
+        if (overlaps.Count > 0)
+        {
+            await notifier.NotifyCancelledAsync(overlaps, reason, ct);
+        }
+
         return Result.Success(new CreateSeriesResponse(seriesId, blocks.Count, overlaps.Count));
     }
 
-    private static List<BlockConflictChecker.BlockInterval> ExpandSeries(CreateSeriesRequest req)
+    private async Task<IReadOnlyList<int>?> ResolveCourtsAsync(
+        CreateSeriesRequest req, CancellationToken ct)
+    {
+        if (req.AllCourts)
+        {
+            return await db.Courts
+                .AsNoTracking()
+                .Where(c => c.IsActive)
+                .OrderBy(c => c.DisplayOrder)
+                .Select(c => c.Id)
+                .ToListAsync(ct);
+        }
+
+        var exists = await db.Courts
+            .AsNoTracking()
+            .AnyAsync(c => c.Id == req.CourtId, ct);
+        return exists ? [req.CourtId] : null;
+    }
+
+    private static List<BlockConflictChecker.BlockInterval> ExpandSeries(
+        CreateSeriesRequest req, IReadOnlyList<int> courtIds)
     {
         var list = new List<BlockConflictChecker.BlockInterval>();
 
@@ -69,13 +102,17 @@ public sealed class CreateSeriesHandler(
 
         while (cursor <= req.EndDate)
         {
-            // Keep the wall-clock offset from the request (Austrian local time)
-            // so the interval stays within the intended slot even across DST.
+            // Keep the wall-clock offset from the request (Austrian local
+            // time) so the interval stays within the intended slot across
+            // DST. UTC offset zero matches existing behavior.
             var start = new DateTimeOffset(
                 cursor.ToDateTime(req.StartTime), TimeSpan.Zero);
             var end = new DateTimeOffset(
                 cursor.ToDateTime(req.EndTime), TimeSpan.Zero);
-            list.Add(new BlockConflictChecker.BlockInterval(req.CourtId, start, end));
+            foreach (var cid in courtIds)
+            {
+                list.Add(new BlockConflictChecker.BlockInterval(cid, start, end));
+            }
 
             cursor = cursor.AddDays(7);
         }

@@ -6,7 +6,11 @@ public sealed class CreateSeriesValidator : AbstractValidator<CreateSeriesReques
 {
     public CreateSeriesValidator()
     {
-        RuleFor(x => x.CourtId).GreaterThan(0);
+        // CourtId only required when targeting a single court; the
+        // all-courts path resolves them server-side.
+        RuleFor(x => x.CourtId)
+            .GreaterThan(0)
+            .When(x => !x.AllCourts);
         RuleFor(x => x.EndDate)
             .GreaterThanOrEqualTo(x => x.StartDate)
             .WithMessage("Gültig-bis-Datum muss am oder nach dem Gültig-ab-Datum liegen.");

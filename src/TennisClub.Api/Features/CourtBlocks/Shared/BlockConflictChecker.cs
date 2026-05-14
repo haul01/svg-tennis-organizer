@@ -25,7 +25,11 @@ public sealed class BlockConflictChecker(AppDbContext db)
         var maxEnd = blocks.Max(b => b.EndsAt);
         var courtIds = blocks.Select(b => b.CourtId).Distinct().ToList();
 
+        // Member + Court are included so the cancellation notifier can
+        // build the mail body without a second roundtrip per reservation.
         var candidates = await db.Reservations
+            .Include(r => r.Member)
+            .Include(r => r.Court)
             .Where(r => r.Status == ReservationStatus.Active
                 && courtIds.Contains(r.CourtId)
                 && r.StartsAt < maxEnd

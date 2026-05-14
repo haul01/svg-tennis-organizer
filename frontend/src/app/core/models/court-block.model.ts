@@ -9,16 +9,20 @@ export interface CourtBlockDto {
 }
 
 export interface CreateCourtBlockOnceRequest {
+  /** Ignored when allCourts === true. */
   courtId: number;
   startsAt: string;
   endsAt: string;
   reason: string;
   forceCancelConflicts: boolean;
+  /** When true, the block is materialized for every active court. */
+  allCourts?: boolean;
 }
 
 export type Weekday = 0 | 1 | 2 | 3 | 4 | 5 | 6; // Sun..Sat (ASP.NET DayOfWeek)
 
 export interface CreateCourtBlockSeriesRequest {
+  /** Ignored when allCourts === true. */
   courtId: number;
   weekday: Weekday;
   startTime: string;        // "HH:mm:ss"
@@ -27,6 +31,8 @@ export interface CreateCourtBlockSeriesRequest {
   endDate: string;
   reason: string;
   forceCancelConflicts: boolean;
+  /** When true, the series is materialized for every active court. */
+  allCourts?: boolean;
 }
 
 export interface CreateOnceResponse {

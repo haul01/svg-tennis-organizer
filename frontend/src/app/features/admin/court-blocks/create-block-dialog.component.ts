@@ -71,6 +71,8 @@ export class CreateBlockDialogComponent {
   ];
 
   readonly form = this.fb.nonNullable.group({
+    // 0 is the "Alle Plätze" sentinel; positive values pick a single court.
+    // The submit path translates 0 into allCourts: true on the payload.
     courtId: [this.data.courts[0]?.id ?? 0, Validators.required],
     date: this.fb.control<Date | null>(null, Validators.required),
     startTime: ['08:00', Validators.required],
@@ -97,14 +99,17 @@ export class CreateBlockDialogComponent {
     const mode = this.mode();
     const raw = this.form.getRawValue();
 
+    // courtId === 0 is "Alle Plätze" (valid); only null/undefined would be invalid.
+    const courtIdSet = raw.courtId !== null && raw.courtId !== undefined;
+
     if (mode === 'once') {
-      if (!raw.date || !raw.courtId || !raw.reason.trim()) {
+      if (!raw.date || !courtIdSet || !raw.reason.trim()) {
         this.form.markAllAsTouched();
         return;
       }
       await this.createOnce(false);
     } else {
-      if (!raw.rangeStart || !raw.rangeEnd || !raw.courtId || !raw.reason.trim()) {
+      if (!raw.rangeStart || !raw.rangeEnd || !courtIdSet || !raw.reason.trim()) {
         this.form.markAllAsTouched();
         return;
       }
@@ -123,7 +128,8 @@ export class CreateBlockDialogComponent {
         startsAt: startsAt.toISOString(),
         endsAt: endsAt.toISOString(),
         reason: raw.reason.trim(),
-        forceCancelConflicts
+        forceCancelConflicts,
+        allCourts: raw.courtId === 0
       }));
       if (response.cancelledReservations > 0) {
         // Informational for the admin; UI continues to close.
@@ -150,7 +156,8 @@ export class CreateBlockDialogComponent {
         startDate: toIsoDate(raw.rangeStart!),
         endDate: toIsoDate(raw.rangeEnd!),
         reason: raw.reason.trim(),
-        forceCancelConflicts
+        forceCancelConflicts,
+        allCourts: raw.courtId === 0
       }));
       this.ref.close(true);
     } catch (err) {

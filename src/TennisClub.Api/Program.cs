@@ -183,6 +183,7 @@ builder.Services.AddScoped<UpdateSeasonHandler>();
 builder.Services.AddScoped<CreateCourtHandler>();
 builder.Services.AddScoped<UpdateCourtHandler>();
 builder.Services.AddScoped<BlockConflictChecker>();
+builder.Services.AddScoped<BlockCancellationNotifier>();
 builder.Services.AddScoped<CreateOnceHandler>();
 builder.Services.AddScoped<CreateSeriesHandler>();
 builder.Services.AddScoped<ListBlocksHandler>();

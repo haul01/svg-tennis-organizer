@@ -8,4 +8,10 @@ public sealed record CreateSeriesRequest(
     DateOnly StartDate,
     DateOnly EndDate,
     string Reason,
-    bool ForceCancelConflicts);
+    bool ForceCancelConflicts,
+    /// <summary>
+    /// When true, the series applies to every active court. CourtId is
+    /// ignored. The expansion produces (weeks x courts) CourtBlock rows,
+    /// all sharing one SeriesId so the whole group can be deleted at once.
+    /// </summary>
+    bool AllCourts = false);

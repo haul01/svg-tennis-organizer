@@ -1,0 +1,17 @@
+Hallo {{ first_name }},
+
+wir mussten deine Reservierung leider stornieren, weil der Platz für
+diesen Zeitraum gesperrt wurde:
+
+  Platz:   {{ court_name }}
+  Datum:   {{ date_label }}
+  Uhrzeit: {{ time_label }}
+  Grund:   {{ block_reason }}
+
+Schau gerne in der App vorbei und such dir einen Ersatz-Slot. Es ist
+meistens noch etwas frei.
+
+Sorry für die kurzfristige Änderung!
+
+Sportliche Grüße
+Dein TennisClub

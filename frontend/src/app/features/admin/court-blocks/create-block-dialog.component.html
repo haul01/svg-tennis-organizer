@@ -20,6 +20,13 @@
     <mat-form-field appearance="outline" class="field">
       <mat-label>Platz</mat-label>
       <mat-select formControlName="courtId" required>
+        <!-- Sentinel value 0 = sperre für alle aktiven Plätze gleichzeitig. -->
+        <mat-option [value]="0">
+          <span class="all-courts-option">
+            <mat-icon fontSet="material-symbols-outlined">select_all</mat-icon>
+            Alle Plätze
+          </span>
+        </mat-option>
         @for (c of data.courts; track c.id) {
           <mat-option [value]="c.id">{{ c.name }}</mat-option>
         }
