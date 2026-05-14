@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using TennisClub.Api.Common.Endpoints;
 using TennisClub.Api.Domain.Entities;
 using TennisClub.Api.Features.Admin.Diag.SendTestEmail;
+using TennisClub.Api.Features.Admin.Reports.ListReservations;
 using TennisClub.Api.Features.Auth.ForgotPassword;
 using TennisClub.Api.Features.Auth.Login;
 using TennisClub.Api.Features.Auth.Register;
@@ -188,6 +189,7 @@ builder.Services.AddScoped<ListBlocksHandler>();
 builder.Services.AddScoped<ListBlocksForWeekHandler>();
 builder.Services.AddScoped<DeleteBlockHandler>();
 builder.Services.AddScoped<SendTestEmailHandler>();
+builder.Services.AddScoped<ListReservationsHandler>();
 
 // Booking rule engine + all nine rules.
 builder.Services.AddBookingRules();

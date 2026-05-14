@@ -47,6 +47,12 @@ export const adminRoutes: Routes = [
         loadComponent: () =>
           import('./settings/booking-rules.component').then(m => m.BookingRulesComponent)
       },
+      {
+        path: 'reports/reservations',
+        title: 'Buchungs-Report',
+        loadComponent: () =>
+          import('./reports/reservations-report.component').then(m => m.ReservationsReportComponent)
+      },
       { path: 'guest-billing', component: PlaceholderComponent, title: 'Gastspieler-Abrechnung' }
     ]
   }

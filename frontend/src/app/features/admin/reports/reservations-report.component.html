@@ -1,0 +1,165 @@
+<section class="page">
+  <header class="page__header">
+    <div>
+      <span class="page__kicker">ADMINISTRATION</span>
+      <h1>Buchungs-Report</h1>
+      <p class="page__subtitle">
+        Alle Buchungen in einem Zeitraum, gefiltert nach Platz und Status.
+        Standardansicht: 30 Tage zurück bis heute.
+      </p>
+    </div>
+  </header>
+
+  <form
+    class="filters"
+    [formGroup]="form"
+    (ngSubmit)="applyFilter()"
+    novalidate
+  >
+    <mat-form-field appearance="outline" class="field field--date">
+      <mat-label>Von</mat-label>
+      <input
+        matInput
+        [matDatepicker]="fromPicker"
+        formControlName="from"
+        placeholder="TT.MM.JJJJ"
+      />
+      <mat-datepicker-toggle matIconSuffix [for]="fromPicker" />
+      <mat-datepicker #fromPicker />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="field field--date">
+      <mat-label>Bis</mat-label>
+      <input
+        matInput
+        [matDatepicker]="toPicker"
+        formControlName="to"
+        placeholder="TT.MM.JJJJ"
+      />
+      <mat-datepicker-toggle matIconSuffix [for]="toPicker" />
+      <mat-datepicker #toPicker />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="field">
+      <mat-label>Platz</mat-label>
+      <mat-select formControlName="courtId">
+        <mat-option [value]="null">Alle Plätze</mat-option>
+        @for (c of courts(); track c.id) {
+          <mat-option [value]="c.id">{{ c.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="field">
+      <mat-label>Status</mat-label>
+      <mat-select formControlName="status">
+        <mat-option value="all">Alle</mat-option>
+        <mat-option value="active">Aktiv</mat-option>
+        <mat-option value="cancelled">Storniert</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <div class="filters__actions">
+      <button
+        mat-flat-button
+        class="apply"
+        type="submit"
+      >
+        <mat-icon fontSet="material-symbols-outlined">search</mat-icon>
+        Anwenden
+      </button>
+      <button mat-stroked-button type="button" (click)="resetFilter()">
+        Zurücksetzen
+      </button>
+    </div>
+  </form>
+
+  @if (loading() && items().length === 0) {
+    <div class="empty-state" role="status" aria-live="polite">
+      <mat-spinner diameter="32" />
+      <p>Buchungen werden geladen…</p>
+    </div>
+  } @else if (items().length === 0) {
+    <div class="empty-state">
+      <mat-icon fontSet="material-symbols-outlined">event_busy</mat-icon>
+      <p>Keine Buchungen im gewählten Zeitraum.</p>
+    </div>
+  } @else {
+    <div class="table-card" [class.table-card--loading]="loading()">
+      <div class="table-scroller">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Datum</th>
+              <th scope="col">Zeit</th>
+              <th scope="col">Platz</th>
+              <th scope="col">Mitglied</th>
+              <th scope="col">Gast</th>
+              <th scope="col">Status</th>
+              <th scope="col">Gebucht am</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of items(); track r.id) {
+              <tr [class.row--cancelled]="r.status === 1">
+                <td>{{ formatDate(r.startsAt) }}</td>
+                <td>{{ formatTimeRange(r.startsAt, r.endsAt) }}</td>
+                <td>{{ r.courtName }}</td>
+                <td>
+                  <div class="member">
+                    <span class="member__name">
+                      {{ r.memberFirstName }} {{ r.memberLastName }}
+                    </span>
+                    <span class="member__email">{{ r.memberEmail }}</span>
+                  </div>
+                </td>
+                <td>
+                  @if (r.guestName) {
+                    <span>{{ r.guestName }}</span>
+                  } @else if (r.hasGuest) {
+                    <span class="guest-unspecified">Mit Gastspieler</span>
+                  } @else {
+                    <span class="muted">—</span>
+                  }
+                </td>
+                <td>
+                  <span
+                    class="status-pill"
+                    [class.status-pill--active]="r.status === 0"
+                    [class.status-pill--cancelled]="r.status === 1"
+                  >{{ statusLabel(r.status) }}</span>
+                </td>
+                <td class="muted">{{ formatCreated(r.createdAt) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <nav class="pagination" aria-label="Seitennavigation">
+      <span class="pagination__label">{{ rangeLabel() }}</span>
+      <div class="pagination__controls">
+        <button
+          mat-icon-button
+          type="button"
+          [disabled]="page() <= 1 || loading()"
+          aria-label="Vorherige Seite"
+          (click)="goPrevPage()"
+        >
+          <mat-icon fontSet="material-symbols-outlined">chevron_left</mat-icon>
+        </button>
+        <span class="pagination__current">Seite {{ page() }} / {{ totalPages() }}</span>
+        <button
+          mat-icon-button
+          type="button"
+          [disabled]="page() >= totalPages() || loading()"
+          aria-label="Nächste Seite"
+          (click)="goNextPage()"
+        >
+          <mat-icon fontSet="material-symbols-outlined">chevron_right</mat-icon>
+        </button>
+      </div>
+    </nav>
+  }
+</section>

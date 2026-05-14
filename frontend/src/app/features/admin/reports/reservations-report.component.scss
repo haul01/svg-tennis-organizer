@@ -1,0 +1,197 @@
+@use '../../../../styles/tokens' as *;
+
+:host { display: block; }
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tc-space-md);
+  max-width: 1300px;
+  margin-inline: auto;
+
+  &__header { display: flex; flex-direction: column; gap: var(--tc-space-base); }
+
+  &__kicker {
+    @include tc-label-bold;
+    color: var(--tc-on-surface-variant);
+    text-transform: uppercase;
+  }
+
+  h1 {
+    @include tc-headline-lg;
+    margin: var(--tc-space-base) 0 0;
+    color: var(--tc-on-surface);
+  }
+
+  &__subtitle {
+    @include tc-body-md;
+    margin: var(--tc-space-base) 0 0;
+    color: var(--tc-on-surface-variant);
+  }
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--tc-space-sm);
+  padding: var(--tc-space-md);
+  background: var(--tc-surface-container-lowest);
+  border: 1px solid var(--tc-outline-variant);
+  border-radius: var(--tc-radius-lg);
+
+  &__actions {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--tc-space-xs);
+    align-self: center;
+    margin-top: var(--tc-space-xs);
+  }
+}
+
+.field {
+  min-width: 180px;
+  flex: 0 0 auto;
+
+  &--date { min-width: 160px; }
+}
+
+.apply {
+  background: var(--tc-deep-navy);
+  color: var(--tc-surface-container-lowest);
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    margin-right: var(--tc-space-base);
+  }
+}
+
+.table-card {
+  background: var(--tc-surface-container-lowest);
+  border: 1px solid var(--tc-outline-variant);
+  border-radius: var(--tc-radius-xl);
+  overflow: hidden;
+  transition: opacity 120ms ease;
+
+  &--loading { opacity: 0.5; }
+}
+
+.table-scroller { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+thead {
+  background: var(--tc-surface-container-low);
+  th {
+    @include tc-label-bold;
+    text-align: left;
+    padding: var(--tc-space-sm) var(--tc-space-md);
+    color: var(--tc-on-surface-variant);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+}
+
+tbody td {
+  @include tc-body-md;
+  padding: var(--tc-space-sm) var(--tc-space-md);
+  border-top: 1px solid var(--tc-outline-variant);
+  color: var(--tc-on-surface);
+  vertical-align: top;
+}
+
+.row--cancelled td {
+  color: var(--tc-on-surface-variant);
+  text-decoration: line-through;
+  text-decoration-color: rgba(0, 0, 0, 0.2);
+}
+
+.member {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  &__name {
+    @include tc-label-bold;
+    color: var(--tc-on-surface);
+  }
+
+  &__email {
+    @include tc-label-sm;
+    color: var(--tc-on-surface-variant);
+  }
+}
+
+.muted { color: var(--tc-on-surface-variant); }
+
+.guest-unspecified {
+  @include tc-label-sm;
+  color: var(--tc-on-surface-variant);
+  font-style: italic;
+}
+
+.status-pill {
+  @include tc-label-sm;
+  padding: 2px var(--tc-space-xs);
+  border-radius: var(--tc-radius-full);
+
+  &--active {
+    background: rgba(34, 197, 94, 0.18);
+    color: #1b7a1b;
+  }
+
+  &--cancelled {
+    background: var(--tc-error-container);
+    color: var(--tc-on-error-container);
+  }
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--tc-space-sm);
+
+  &__label {
+    @include tc-label-sm;
+    color: var(--tc-on-surface-variant);
+  }
+
+  &__controls {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--tc-space-base);
+  }
+
+  &__current {
+    @include tc-label-sm;
+    color: var(--tc-on-surface);
+    min-width: 110px;
+    text-align: center;
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--tc-space-sm);
+  padding: var(--tc-space-xl);
+  text-align: center;
+  background: var(--tc-surface-container-lowest);
+  border: 1px dashed var(--tc-outline-variant);
+  border-radius: var(--tc-radius-xl);
+  color: var(--tc-on-surface-variant);
+
+  mat-icon { font-size: 40px; width: 40px; height: 40px; }
+  p { @include tc-body-md; margin: 0; }
+}

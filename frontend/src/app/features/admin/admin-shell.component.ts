@@ -107,6 +107,7 @@ export class AdminShellComponent {
     { path: '/admin/court-blocks', label: 'Platzsperren', icon: 'block' },
     { path: '/admin/season', label: 'Saison', icon: 'calendar_month' },
     { path: '/admin/settings', label: 'Buchungsregeln', icon: 'tune' },
+    { path: '/admin/reports/reservations', label: 'Buchungs-Report', icon: 'analytics' },
     { path: '/admin/guest-billing', label: 'Gastspieler', icon: 'receipt_long' }
   ];
 }
