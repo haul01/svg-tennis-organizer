@@ -20,13 +20,11 @@
     <mat-form-field appearance="outline" class="field">
       <mat-label>Platz</mat-label>
       <mat-select formControlName="courtId" required>
-        <!-- Sentinel value 0 = sperre für alle aktiven Plätze gleichzeitig. -->
-        <mat-option [value]="0">
-          <span class="all-courts-option">
-            <mat-icon fontSet="material-symbols-outlined">select_all</mat-icon>
-            Alle Plätze
-          </span>
-        </mat-option>
+        <!-- Sentinel value 0 = sperre für alle aktiven Plätze gleichzeitig.
+             Icon weglassen: mat-select's geschlossener Trigger zeigt den
+             Text-Inhalt des Options-Templates an - eine mat-icon würde dort
+             als ihr Icon-Name ("select_all") landen. -->
+        <mat-option [value]="0" class="all-courts-option">Alle Plätze</mat-option>
         @for (c of data.courts; track c.id) {
           <mat-option [value]="c.id">{{ c.name }}</mat-option>
         }

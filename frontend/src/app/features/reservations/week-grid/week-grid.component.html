@@ -115,23 +115,17 @@
                   <mat-icon fontSet="material-symbols-outlined">check_circle</mat-icon>
                   Meine Buchung
                 </span>
-                <span class="tile__range">
-                  {{ tile.startsAt | date:'HH:mm' }}–{{ tile.endsAt | date:'HH:mm' }}
-                </span>
+                <span class="tile__range">{{ tileTimeRange(tile) }}</span>
               }
               @case ('busy') {
                 <span class="tile__label">Belegt</span>
-                <span class="tile__range">
-                  {{ tile.startsAt | date:'HH:mm' }}–{{ tile.endsAt | date:'HH:mm' }}
-                </span>
+                <span class="tile__range">{{ tileTimeRange(tile) }}</span>
               }
               @case ('blocked') {
                 <span class="tile__label tile__label--blocked">
                   {{ tile.blockReason || 'Gesperrt' }}
                 </span>
-                <span class="tile__range">
-                  {{ tile.startsAt | date:'HH:mm' }}–{{ tile.endsAt | date:'HH:mm' }}
-                </span>
+                <span class="tile__range">{{ tileTimeRange(tile) }}</span>
               }
             }
           </button>

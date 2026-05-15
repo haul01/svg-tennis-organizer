@@ -47,20 +47,11 @@ mat-dialog-content {
 
 .field { width: 100%; }
 
-// "Alle Plätze" option in the court dropdown - icon-tagged so it
-// stands apart from the individual courts.
+// "Alle Plätze" option in the court dropdown - bold + accented so it
+// stands apart from the individual court entries below it.
 .all-courts-option {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--tc-space-xs);
   font-weight: 600;
-
-  mat-icon {
-    color: var(--tc-deep-navy);
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
-  }
+  color: var(--tc-deep-navy);
 }
 
 .row {

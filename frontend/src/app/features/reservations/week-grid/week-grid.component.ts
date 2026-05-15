@@ -11,7 +11,6 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { DatePipe } from '@angular/common';
 import { addDays, endOfDay, format, startOfDay, startOfWeek } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { firstValueFrom } from 'rxjs';
@@ -79,7 +78,7 @@ interface BookingTile {
 @Component({
   selector: 'app-week-grid',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, MatButtonModule, MatIconModule, MatProgressSpinnerModule],
+  imports: [MatButtonModule, MatIconModule, MatProgressSpinnerModule],
   templateUrl: './week-grid.component.html',
   styleUrl: './week-grid.component.scss'
 })
@@ -241,6 +240,15 @@ export class WeekGridComponent {
 
     return result;
   });
+
+  /**
+   * Formats a tile's time range using date-fns directly. Avoids the
+   * Angular DatePipe which would need the de-AT locale data registered
+   * to render `HH:mm` strings without throwing NG0701.
+   */
+  tileTimeRange(tile: BookingTile): string {
+    return `${format(tile.startsAt, 'HH:mm')}–${format(tile.endsAt, 'HH:mm')}`;
+  }
 
   constructor() {
     // One-shot bootstrap of courts + season + settings.
