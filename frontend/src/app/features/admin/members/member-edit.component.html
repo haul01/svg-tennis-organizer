@@ -80,7 +80,7 @@
               mat-flat-button
               type="submit"
               class="save"
-              [disabled]="saving() || form.invalid || !form.dirty"
+              [disabled]="saving() || form.invalid"
             >
               @if (saving()) {
                 <span class="save__content">

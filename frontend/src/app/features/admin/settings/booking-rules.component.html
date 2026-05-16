@@ -11,7 +11,7 @@
       mat-flat-button
       class="save"
       type="button"
-      [disabled]="saving() || form.invalid || !form.dirty || loading()"
+      [disabled]="saving() || form.invalid || loading()"
       (click)="save()"
     >
       @if (saving()) {
