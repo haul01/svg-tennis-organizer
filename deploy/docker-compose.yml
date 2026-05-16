@@ -72,9 +72,11 @@ services:
     restart: unless-stopped
     ports:
       # Cloudflare Tunnel terminates TLS at the edge and forwards plain
-      # HTTP to localhost:80 here. If you ever expose this directly,
-      # switch to the Caddy automatic-HTTPS config.
-      - "127.0.0.1:80:80"
+      # HTTP to localhost:8080 here. Port 8080 (not 80) is chosen so
+      # this can coexist with Pi-Hole or any other process on the host
+      # already bound to 80. If you ever expose this directly to the
+      # internet, switch to the Caddy automatic-HTTPS config and bind 80/443.
+      - "127.0.0.1:8080:80"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ../frontend/dist/frontend/browser:/srv/app:ro

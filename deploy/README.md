@@ -4,7 +4,7 @@ Self-hosted Setup auf einem Raspberry Pi (4B, 8 GB RAM, SSD). Stack:
 
 - `postgres:16-alpine` — Daten + Identity-Tabellen
 - `tennisclub-api` — ASP.NET Core 10, Migrations + Seed laufen beim Start
-- `caddy:2-alpine` — Reverse Proxy + statisches Angular-Bundle, hört auf `127.0.0.1:80`
+- `caddy:2-alpine` — Reverse Proxy + statisches Angular-Bundle, hört auf `127.0.0.1:8080` (Port 8080 weil Pi-Hole o.ä. typisch schon auf 80 läuft)
 
 TLS macht der Cloudflare Tunnel davor (oder ein anderer Proxy deiner Wahl) — Caddy selbst hat hier kein TLS.
 
@@ -124,11 +124,11 @@ sudo cloudflared service install <token-aus-cf-dashboard>
 
 Im Cloudflare Zero Trust Dashboard → Networks → Tunnels → deinen Tunnel → "Public Hostname" anlegen:
 - Hostname: `tennis.deinedomain.at`
-- Service: `http://127.0.0.1:80`
+- Service: `http://localhost:8080`
 
 Quick-Test ohne eigene Domain:
 ```bash
-cloudflared tunnel --url http://localhost:80
+cloudflared tunnel --url http://localhost:8080
 ```
 Liefert eine `*.trycloudflare.com`-URL die bis zum Beenden gilt.
 
