@@ -30,6 +30,8 @@
         <input
           matInput
           type="email"
+          id="login-email"
+          name="email"
           formControlName="email"
           autocomplete="username"
           placeholder="deine.mail@verein.at"
@@ -49,6 +51,8 @@
         <input
           matInput
           [type]="passwordVisible() ? 'text' : 'password'"
+          id="login-password"
+          name="password"
           formControlName="password"
           autocomplete="current-password"
           placeholder="••••••••"
