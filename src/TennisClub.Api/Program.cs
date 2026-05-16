@@ -68,7 +68,16 @@ builder.Services.AddDataProtection();
 
 builder.Services.AddIdentityCore<Member>(opts =>
     {
-        opts.Password.RequiredLength = 8;
+        // Booking-system context: account theft has low blast radius
+        // (no money, no PII beyond name/email/bookings). Trade strict
+        // password rules for usability so members don't need a manager
+        // for their tennis booking. Lockout still mitigates brute force.
+        opts.Password.RequiredLength = 6;
+        opts.Password.RequireDigit = false;
+        opts.Password.RequireLowercase = false;
+        opts.Password.RequireUppercase = false;
+        opts.Password.RequireNonAlphanumeric = false;
+        opts.Password.RequiredUniqueChars = 1;
         opts.User.RequireUniqueEmail = true;
         opts.SignIn.RequireConfirmedEmail = false;
         opts.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
@@ -146,6 +155,18 @@ builder.Services.AddRateLimiter(opts =>
             factory: _ => new FixedWindowRateLimiterOptions
             {
                 PermitLimit = 3,
+                Window = TimeSpan.FromHours(1),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            }));
+
+    // Forgot-password also sends mail through Brevo. Same protection.
+    opts.AddPolicy("auth-forgot", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
                 Window = TimeSpan.FromHours(1),
                 QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                 QueueLimit = 0

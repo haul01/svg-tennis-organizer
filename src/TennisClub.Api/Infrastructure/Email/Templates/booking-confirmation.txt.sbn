@@ -9,8 +9,8 @@ deine Reservierung ist bestätigt:
   Gastspieler: {{ if guest_name }}{{ guest_name }}{{ else }}vermerkt{{ end }}
 {{- end }}
 
-{{ if has_guest -}}
-Bitte vergiss nicht, die Gastspielergebühr im Vereinsheim zu entrichten.
+{{ if has_guest || is_guest_booking -}}
+Bitte vergiss nicht, die Gastgebühr im Vereinsheim zu entrichten.
 
 {{ end -}}
 Stornierung möglich unter „Meine Buchungen" in der App.

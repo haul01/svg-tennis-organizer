@@ -8,6 +8,7 @@ using TennisClub.Api.Domain.Enums;
 using TennisClub.Api.Features.Reservations.Rules;
 using TennisClub.Api.Infrastructure.Email;
 using TennisClub.Api.Infrastructure.Persistence;
+using TennisClub.Api.Infrastructure.Persistence.Seed;
 
 namespace TennisClub.Api.Features.Reservations.Create;
 
@@ -85,13 +86,14 @@ public sealed class CreateReservationHandler(
 
         // Best-effort: a mail-pipeline hiccup must not roll back a successful
         // booking. The dispatcher will log render or SMTP failures separately.
-        try { await SendConfirmationAsync(reservation, ct); }
+        try { await SendConfirmationAsync(reservation, roles, ct); }
         catch { /* swallowed on purpose */ }
 
         return Result.Success(reservation.Id);
     }
 
-    private async Task SendConfirmationAsync(Reservation r, CancellationToken ct)
+    private async Task SendConfirmationAsync(
+        Reservation r, IReadOnlyCollection<string> roles, CancellationToken ct)
     {
         // Pull the bits the template needs in a single query so the
         // confirmation mail keeps a stable shape regardless of caller.
@@ -120,7 +122,10 @@ public sealed class CreateReservationHandler(
                 System.Globalization.CultureInfo.GetCultureInfo("de-AT")),
             TimeLabel = $"{localStart:HH:mm} – {localEnd:HH:mm} Uhr",
             HasGuest = r.HasGuest,
-            GuestName = ctx.GuestName
+            GuestName = ctx.GuestName,
+            // Fee-hint fires for either a Member-bringing-Gastspieler booking
+            // (HasGuest) OR a Guest-role self-booking - both pay at the club.
+            IsGuestBooking = roles.Contains(SeedData.GuestRole)
         }, ct);
 
         await email.EnqueueAsync(

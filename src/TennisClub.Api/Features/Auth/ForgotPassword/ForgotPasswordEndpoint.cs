@@ -23,5 +23,6 @@ public sealed class ForgotPasswordEndpoint : IEndpoint
                 message = "Falls die Adresse registriert ist, haben wir dir einen Link geschickt."
             });
         })
-        .AllowAnonymous();
+        .AllowAnonymous()
+        .RequireRateLimiting("auth-forgot");
 }

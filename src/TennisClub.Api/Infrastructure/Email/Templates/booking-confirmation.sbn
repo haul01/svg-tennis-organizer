@@ -29,10 +29,10 @@
     {{ end }}
   </table>
 
-  {{ if has_guest }}
+  {{ if has_guest || is_guest_booking }}
   <p style="background: #fff4e5; border-left: 3px solid #d97706;
             padding: 12px 16px; color: #7c2d12;">
-    <em>Bitte vergiss nicht, die Gastspielergebühr im Vereinsheim zu entrichten.</em>
+    <em>Bitte vergiss nicht, die Gastgebühr im Vereinsheim zu entrichten.</em>
   </p>
   {{ end }}
 
