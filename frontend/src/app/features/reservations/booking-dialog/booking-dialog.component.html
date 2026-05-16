@@ -36,20 +36,22 @@
     </mat-button-toggle-group>
   </div>
 
-  <div class="guest-toggle">
-    <mat-slide-toggle
-      color="primary"
-      [checked]="hasGuest()"
-      (change)="onGuestToggle($event.checked)"
-    >
-      Mit Gastspieler spielen
-    </mat-slide-toggle>
-  </div>
+  @if (!isGuestBooker()) {
+    <div class="guest-toggle">
+      <mat-slide-toggle
+        color="primary"
+        [checked]="hasGuest()"
+        (change)="onGuestToggle($event.checked)"
+      >
+        Mit Gastspieler spielen
+      </mat-slide-toggle>
+    </div>
+  }
 
-  @if (hasGuest()) {
+  @if (showFeeHint()) {
     <div class="fee-hint" role="note">
       <mat-icon fontSet="material-symbols-outlined">info</mat-icon>
-      <span>Gastspielergebühr bitte im Vereinsheim entrichten.</span>
+      <span>Gastgebühr bitte im Vereinsheim entrichten.</span>
     </div>
   }
 

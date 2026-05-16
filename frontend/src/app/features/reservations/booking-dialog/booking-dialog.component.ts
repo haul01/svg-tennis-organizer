@@ -62,13 +62,15 @@ export class BookingDialogComponent {
   readonly ruleFailures = signal<ValidationFailure[]>([]);
   readonly hasGuest = signal(false);
 
-  // Show the membership prompt only when (a) the current session is a
-  // Guest and (b) the admin has actually configured prompt text.
-  readonly showMembershipPrompt = computed(() => {
-    const user = this.auth.currentUser();
-    const isGuest = user?.roles.includes('Guest') ?? false;
-    return isGuest && this.data.guestMembershipPromptText.trim().length > 0;
-  });
+  // The booker themselves has the Guest role - hide the "bring a guest"
+  // toggle (they are the guest) and force-show the fee hint.
+  readonly isGuestBooker = computed(() =>
+    this.auth.currentUser()?.roles.includes('Guest') ?? false);
+
+  readonly showMembershipPrompt = computed(() =>
+    this.isGuestBooker() && this.data.guestMembershipPromptText.trim().length > 0);
+
+  readonly showFeeHint = computed(() => this.hasGuest() || this.isGuestBooker());
 
   // Default to ~2 h (4 slots for 30 min, 2 slots for 60 min); never
   // exceed the admin-configured cap.
