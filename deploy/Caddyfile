@@ -15,6 +15,15 @@
 		}
 	}
 
+	# index.html points to the current chunk filenames - it MUST be
+	# revalidated on every visit so a stale copy doesn't refer to chunks
+	# that have been replaced by a newer deploy. SPA deep-links (e.g.
+	# /reservations) also resolve to index.html via try_files below and
+	# inherit this header. Without it, browsers cached index.html for
+	# minutes/hours and broke clients after a deploy.
+	@indexHtml path / /index.html
+	header @indexHtml Cache-Control "no-cache, no-store, must-revalidate"
+
 	# Don't try to send config.js through cache busting - the file is
 	# meant to be edited in place to swap the API URL between deploys.
 	@config path /config.js
