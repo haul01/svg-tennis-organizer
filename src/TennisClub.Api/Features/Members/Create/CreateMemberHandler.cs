@@ -61,7 +61,7 @@ public sealed class CreateMemberHandler(
             }, ct);
 
             await email.EnqueueAsync(
-                new EmailMessage(member.Email!, "Willkommen im TennisClub",
+                new EmailMessage(member.Email!, "Willkommen bei SVG Tennis",
                     rendered.Html, rendered.Plain),
                 ct);
         }

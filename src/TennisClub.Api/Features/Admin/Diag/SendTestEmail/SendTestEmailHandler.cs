@@ -16,7 +16,7 @@ public sealed class SendTestEmailHandler(
     {
         var message = new EmailMessage(
             To: req.To,
-            Subject: "TennisClub Test-Mail",
+            Subject: "SVG Tennis Test-Mail",
             HtmlBody: """
                 <!DOCTYPE html>
                 <html lang="de"><head><meta charset="UTF-8"></head>

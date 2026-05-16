@@ -4,7 +4,7 @@
 <body style="font-family: Arial, sans-serif; color: #0b1c30; line-height: 1.6;">
   <h1 style="color: #0a192f;">Willkommen, {{ first_name }}!</h1>
 
-  <p>Ein Administrator hat ein Konto für dich im TennisClub angelegt.</p>
+  <p>Ein Administrator hat ein Konto für dich im SVG Tennis angelegt.</p>
 
   <p>Klicke den folgenden Link, um dein Passwort zu setzen und dich zum
      ersten Mal anzumelden:</p>
@@ -23,6 +23,6 @@
     hast, ignoriere diese Nachricht.
   </p>
 
-  <p style="margin-top: 32px;">Sportliche Grüße<br>Dein TennisClub</p>
+  <p style="margin-top: 32px;">Sportliche Grüße<br>Dein SVG Tennis</p>
 </body>
 </html>
