@@ -11,6 +11,22 @@
 </div>
 
 <mat-dialog-content>
+  @if (errorMessage(); as msg) {
+    <div #errorBanner class="error-banner" role="alert">
+      <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
+      <div class="error-banner__body">
+        <span>{{ msg }}</span>
+        @if (ruleFailures().length > 0) {
+          <ul>
+            @for (f of ruleFailures(); track f.code) {
+              <li>{{ f.message }}</li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+  }
+
   <div class="slot-summary">
     <div class="slot-summary__icon" aria-hidden="true">
       <mat-icon fontSet="material-symbols-outlined">calendar_month</mat-icon>
@@ -60,22 +76,6 @@
       <mat-icon fontSet="material-symbols-outlined">favorite</mat-icon>
       <p>{{ data.guestMembershipPromptText }}</p>
     </aside>
-  }
-
-  @if (errorMessage(); as msg) {
-    <div class="error-banner" role="alert">
-      <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
-      <div class="error-banner__body">
-        <span>{{ msg }}</span>
-        @if (ruleFailures().length > 0) {
-          <ul>
-            @for (f of ruleFailures(); track f.code) {
-              <li>{{ f.message }}</li>
-            }
-          </ul>
-        }
-      </div>
-    </div>
   }
 </mat-dialog-content>
 

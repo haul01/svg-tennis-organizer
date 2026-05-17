@@ -2,29 +2,42 @@
   <header class="page__header">
     <div class="page__heading">
       <span class="page__kicker">PLANUNG</span>
-      <h1>Wochengrid</h1>
+      <h1>Platzbelegung</h1>
     </div>
-    <nav class="week-nav" aria-label="Wochennavigation">
-      <button mat-icon-button type="button" (click)="goPreviousWeek()" aria-label="Vorherige Woche">
-        <mat-icon fontSet="material-symbols-outlined">chevron_left</mat-icon>
+    @if (selectedDayIndex() > 0) {
+      <button mat-stroked-button type="button" class="today-btn" (click)="goToday()">
+        <mat-icon fontSet="material-symbols-outlined">today</mat-icon>
+        Heute
       </button>
-      <button mat-button type="button" (click)="goToday()">Heute</button>
-      <button mat-icon-button type="button" (click)="goNextWeek()" aria-label="Nächste Woche">
-        <mat-icon fontSet="material-symbols-outlined">chevron_right</mat-icon>
-      </button>
-    </nav>
+    }
   </header>
 
-  <div class="day-tabs" role="tablist" aria-label="Wochentage">
-    @for (day of weekDays(); track day.getTime(); let i = $index) {
+  @if (isGuest() && !bootstrapping() && courts().length > 0) {
+    <aside class="guest-info" role="note">
+      <mat-icon fontSet="material-symbols-outlined">info</mat-icon>
+      @if (hasGuestBookableCourts()) {
+        <p>
+          Als Gast kannst du auf folgenden Plätzen buchen:
+          <strong>{{ guestBookableCourtNames() }}</strong>.
+        </p>
+      } @else {
+        <p>Aktuell sind keine Plätze für Gäste buchbar. Bitte wende dich an den Verein.</p>
+      }
+    </aside>
+  }
+
+  <div class="day-tabs" role="tablist" aria-label="Tagesauswahl">
+    @for (day of visibleDays(); track day.getTime(); let i = $index) {
       <button
+        #dayTab
         type="button"
         role="tab"
         class="day-tab"
         [class.day-tab--active]="selectedDayIndex() === i"
+        [class.day-tab--today]="i === 0"
         [attr.aria-selected]="selectedDayIndex() === i"
-        (click)="selectDay(i)"
-      >{{ dayLabel(day) }}</button>
+        (click)="selectDay(day)"
+      >{{ dayTabLabel(day) }}</button>
     }
   </div>
 
@@ -66,7 +79,7 @@
           </div>
         }
 
-        <!-- Layer 1: slot grid (booking-agnostic, knows only free vs past). -->
+        <!-- Layer 1: slot grid (booking-agnostic, knows only free/past/guest-blocked). -->
         @for (label of timeSlots(); track label; let row = $index) {
           <div class="grid__time" [style.gridRow]="row + 2" [style.gridColumn]="1">{{ label }}</div>
           @for (cell of grid()[row]; track cell.courtId; let col = $index) {
@@ -76,16 +89,17 @@
               [class]="'slot--' + cell.state"
               [style.gridColumn]="col + 2"
               [style.gridRow]="row + 2"
-              [disabled]="cell.state !== 'free'"
+              [disabled]="cell.state === 'past'"
               (click)="onSlotClick(cell)"
-              [attr.aria-label]="
-                cell.state === 'free'
-                  ? 'Slot buchen: Platz ' + cell.courtId + ' um ' + label
-                  : 'Vergangener Slot: Platz ' + cell.courtId + ' um ' + label
-              "
+              [attr.aria-label]="slotAriaLabel(cell, label)"
             >
-              @if (cell.state === 'free') {
-                <span class="slot__label">Frei</span>
+              @switch (cell.state) {
+                @case ('free') {
+                  <span class="slot__label">Frei</span>
+                }
+                @case ('guest-blocked') {
+                  <mat-icon class="slot__icon" fontSet="material-symbols-outlined">lock</mat-icon>
+                }
               }
             </button>
           }

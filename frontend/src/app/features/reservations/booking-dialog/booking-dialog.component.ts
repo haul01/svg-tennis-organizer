@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  inject,
+  signal,
+  viewChild
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import {
@@ -61,6 +70,21 @@ export class BookingDialogComponent {
   readonly errorMessage = signal<string | null>(null);
   readonly ruleFailures = signal<ValidationFailure[]>([]);
   readonly hasGuest = signal(false);
+
+  private readonly errorBanner = viewChild<ElementRef<HTMLElement>>('errorBanner');
+
+  constructor() {
+    // When an error appears (after submit fails), scroll the banner into
+    // view. Crucial on mobile where the banner would otherwise sit above
+    // the visible viewport after the dialog has been scrolled down.
+    effect(() => {
+      const msg = this.errorMessage();
+      const banner = this.errorBanner();
+      if (msg && banner) {
+        banner.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
+  }
 
   // The booker themselves has the Guest role - hide the "bring a guest"
   // toggle (they are the guest) and force-show the fee hint.

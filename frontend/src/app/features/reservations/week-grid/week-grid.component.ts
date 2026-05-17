@@ -3,18 +3,21 @@ import {
   Component,
   computed,
   effect,
+  ElementRef,
   inject,
-  signal
+  signal,
+  viewChildren
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { addDays, endOfDay, format, startOfDay, startOfWeek } from 'date-fns';
+import { addDays, endOfDay, format, isSameDay, startOfDay, startOfWeek } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { firstValueFrom } from 'rxjs';
 
+import { AuthService } from '../../../core/auth/auth.service';
 import {
   ConfirmDialogComponent,
   ConfirmDialogData
@@ -47,7 +50,7 @@ import { ReservationsService } from '../reservations.service';
 // on top of the slot layer (z-index) and visually cover the slots
 // underneath, so multi-slot bookings appear as one continuous block.
 
-type SlotState = 'free' | 'past';
+type SlotState = 'free' | 'past' | 'guest-blocked';
 
 interface SlotCell {
   state: SlotState;
@@ -90,6 +93,7 @@ export class WeekGridComponent {
   private readonly settingsApi = inject(SettingsApi);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
+  private readonly auth = inject(AuthService);
 
   // State
   readonly courts = signal<CourtDto[]>([]);
@@ -97,22 +101,52 @@ export class WeekGridComponent {
   readonly settings = signal<PublicSettingsDto | null>(null);
   readonly blocks = signal<CourtBlockDto[]>([]);
   readonly bootstrapping = signal(true);
-  readonly weekStart = signal<Date>(startOfWeek(new Date(), { weekStartsOn: 1 }));
-  readonly selectedDayIndex = signal<number>(todayIndex());
+  readonly selectedDate = signal<Date>(startOfDay(new Date()));
 
   // Expose service signals to the template
   readonly loading = this.reservations.loading;
   readonly error = this.reservations.error;
   readonly weekReservations = this.reservations.weekReservations;
 
+  readonly isGuest = computed(() =>
+    this.auth.currentUser()?.roles.includes('Guest') ?? false);
+
   // Derived
-  readonly weekDays = computed(() =>
-    Array.from({ length: 7 }, (_, i) => addDays(this.weekStart(), i)));
+  /**
+   * Rolling day strip starting at today: today + N forward days, where
+   * N = MaxAdvanceBookingDays. Matches the backend rule: the latest
+   * bookable StartsAt is now + MaxAdvanceBookingDays.
+   */
+  readonly visibleDays = computed<Date[]>(() => {
+    const today = startOfDay(new Date());
+    const max = this.settings()?.maxAdvanceBookingDays ?? 7;
+    const count = Math.max(1, max + 1);
+    return Array.from({ length: count }, (_, i) => addDays(today, i));
+  });
 
-  readonly selectedDate = computed(() => this.weekDays()[this.selectedDayIndex()]);
+  readonly selectedDayIndex = computed<number>(() => {
+    const sel = this.selectedDate().getTime();
+    const idx = this.visibleDays().findIndex(d => d.getTime() === sel);
+    return idx >= 0 ? idx : 0;
+  });
 
-  readonly selectedDateLabel = computed(() =>
-    format(this.selectedDate(), "EEEE, d. MMMM yyyy", { locale: de }));
+  readonly selectedDateLabel = computed(() => {
+    const d = this.selectedDate();
+    const today = startOfDay(new Date());
+    const prefix = isSameDay(d, today)
+      ? 'Heute, '
+      : isSameDay(d, addDays(today, 1))
+        ? 'Morgen, '
+        : '';
+    return prefix + format(d, "EEEE, d. MMMM yyyy", { locale: de });
+  });
+
+  /** Comma-separated names of guest-bookable courts, for the guest info banner. */
+  readonly guestBookableCourtNames = computed<string>(() =>
+    this.courts().filter(c => c.isGuestBookable).map(c => c.name).join(', '));
+
+  readonly hasGuestBookableCourts = computed(() =>
+    this.courts().some(c => c.isGuestBookable));
 
   readonly timeSlots = computed<string[]>(() => {
     const s = this.season();
@@ -120,7 +154,7 @@ export class WeekGridComponent {
     return buildSlotLabels(s.openingTime, s.closingTime, s.slotDurationMinutes);
   });
 
-  /** Slot-state grid: free or past, per (row x court). Booking-agnostic. */
+  /** Slot-state grid per (row x court). Booking-agnostic. */
   readonly grid = computed<SlotCell[][]>(() => {
     const season = this.season();
     const courts = this.courts();
@@ -130,20 +164,28 @@ export class WeekGridComponent {
     const now = new Date();
     const labels = this.timeSlots();
     const slotMinutes = season.slotDurationMinutes;
+    const guest = this.isGuest();
 
     return labels.map(label => {
       const [h, m] = label.split(':').map(Number);
       const rowStart = new Date(day);
       rowStart.setHours(h, m, 0, 0);
       const rowEnd = new Date(rowStart.getTime() + slotMinutes * 60_000);
-      const state: SlotState = rowEnd <= now ? 'past' : 'free';
+      const inPast = rowEnd <= now;
 
-      return courts.map<SlotCell>(court => ({
-        state,
-        startsAt: rowStart,
-        endsAt: rowEnd,
-        courtId: court.id
-      }));
+      return courts.map<SlotCell>(court => {
+        const state: SlotState = inPast
+          ? 'past'
+          : guest && !court.isGuestBookable
+            ? 'guest-blocked'
+            : 'free';
+        return {
+          state,
+          startsAt: rowStart,
+          endsAt: rowEnd,
+          courtId: court.id
+        };
+      });
     });
   });
 
@@ -250,17 +292,39 @@ export class WeekGridComponent {
     return `${format(tile.startsAt, 'HH:mm')}–${format(tile.endsAt, 'HH:mm')}`;
   }
 
+  private readonly dayTabs = viewChildren<ElementRef<HTMLElement>>('dayTab');
+
   constructor() {
     // One-shot bootstrap of courts + season + settings.
     void this.bootstrap();
 
-    // Re-load the week whenever the selected week changes.
+    // Reload reservations + blocks only when the calendar week changes.
+    // Within-week day switches keep the same data and skip the roundtrip.
     effect(() => {
-      const ws = this.weekStart();
-      void this.reservations.loadWeek(ws);
-      void this.loadBlocksForWeek(ws);
+      const ts = this.selectedWeekStartMs();
+      const weekStart = new Date(ts);
+      void this.reservations.loadWeek(weekStart);
+      void this.loadBlocksForWeek(weekStart);
+    });
+
+    // Keep the active day tab horizontally in view as it changes.
+    effect(() => {
+      const tabs = this.dayTabs();
+      const idx = this.selectedDayIndex();
+      const tab = tabs[idx];
+      if (tab) {
+        tab.nativeElement.scrollIntoView({
+          inline: 'center',
+          block: 'nearest',
+          behavior: 'smooth'
+        });
+      }
     });
   }
+
+  /** Numeric timestamp dedupes the loadWeek effect across same-week day changes. */
+  private readonly selectedWeekStartMs = computed(() =>
+    startOfWeek(this.selectedDate(), { weekStartsOn: 1 }).getTime());
 
   private async loadBlocksForWeek(weekStart: Date): Promise<void> {
     try {
@@ -272,28 +336,41 @@ export class WeekGridComponent {
     }
   }
 
-  dayLabel(date: Date): string {
-    return format(date, 'EEE, d. MMM', { locale: de });
+  dayTabLabel(date: Date): string {
+    const today = startOfDay(new Date());
+    if (isSameDay(date, today)) return 'Heute';
+    if (isSameDay(date, addDays(today, 1))) return 'Morgen';
+    return format(date, 'EEE, d.M.', { locale: de });
   }
 
-  selectDay(index: number): void {
-    this.selectedDayIndex.set(index);
+  slotAriaLabel(cell: SlotCell, label: string): string {
+    switch (cell.state) {
+      case 'free':
+        return `Slot buchen: Platz ${cell.courtId} um ${label}`;
+      case 'guest-blocked':
+        return `Platz ${cell.courtId} um ${label} ist für Gäste nicht buchbar`;
+      case 'past':
+        return `Vergangener Slot: Platz ${cell.courtId} um ${label}`;
+    }
+  }
+
+  selectDay(date: Date): void {
+    this.selectedDate.set(startOfDay(date));
   }
 
   goToday(): void {
-    this.weekStart.set(startOfWeek(new Date(), { weekStartsOn: 1 }));
-    this.selectedDayIndex.set(todayIndex());
-  }
-
-  goPreviousWeek(): void {
-    this.weekStart.update(d => addDays(d, -7));
-  }
-
-  goNextWeek(): void {
-    this.weekStart.update(d => addDays(d, 7));
+    this.selectedDate.set(startOfDay(new Date()));
   }
 
   onSlotClick(cell: SlotCell): void {
+    if (cell.state === 'guest-blocked') {
+      this.snackBar.open(
+        'Dieser Platz ist für Gäste nicht buchbar.',
+        'OK',
+        { duration: 4000 }
+      );
+      return;
+    }
     if (cell.state !== 'free') return;
 
     const court = this.courts().find(c => c.id === cell.courtId);
@@ -377,11 +454,6 @@ export class WeekGridComponent {
       this.bootstrapping.set(false);
     }
   }
-}
-
-function todayIndex(): number {
-  const dayIdx = new Date().getDay(); // Sun=0, Mon=1, ...
-  return (dayIdx + 6) % 7;             // Shift so Monday=0, Sunday=6
 }
 
 function buildSlotLabels(openingTime: string, closingTime: string, slotMinutes: number): string[] {
