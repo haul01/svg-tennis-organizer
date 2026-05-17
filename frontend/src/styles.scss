@@ -43,3 +43,22 @@ h3 { @include tc-headline-md; }
 .mat-mdc-menu-panel {
   background-color: var(--tc-surface-container-lowest) !important;
 }
+
+// Outline form-fields render their floating label at the top edge of the
+// outline. When the field sits directly under the dialog title, MDC's
+// default content top padding can clip the rising label. Add a little
+// breathing room above so the label is fully visible on focus.
+.mat-mdc-dialog-content {
+  padding-top: 0.75rem !important;
+}
+
+// On small phones, dialog component hosts that declare a desktop-oriented
+// min-width (e.g. 460px) push content past the right edge when the pane
+// is capped at 95vw. Drop the min-width inside the dialog surface below
+// 480px so the dialog fits the viewport with breathing room on both sides.
+@media (max-width: 480px) {
+  .mat-mdc-dialog-container > *,
+  .mdc-dialog__surface > * {
+    min-width: 0 !important;
+  }
+}
