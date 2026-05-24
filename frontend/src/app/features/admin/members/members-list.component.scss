@@ -36,6 +36,12 @@
   }
 }
 
+.page__actions {
+  display: inline-flex;
+  gap: var(--tc-space-xs);
+  flex-wrap: wrap;
+}
+
 .cta {
   background: var(--tc-tennis-green);
   color: var(--tc-deep-navy);
@@ -44,6 +50,11 @@
   &:hover:not([disabled]) {
     background: #a9e51d;
   }
+}
+
+.cta-secondary {
+  color: var(--tc-deep-navy);
+  font-weight: 600;
 }
 
 .toolbar {

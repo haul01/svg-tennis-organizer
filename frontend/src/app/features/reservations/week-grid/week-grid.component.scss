@@ -126,15 +126,6 @@
     @include tc-label-sm;
     color: var(--tc-on-surface-variant);
   }
-
-  &__count {
-    margin-left: var(--tc-space-xs);
-    padding: 2px var(--tc-space-xs);
-    border-radius: var(--tc-radius-full);
-    background: var(--tc-surface-container);
-    color: var(--tc-on-surface);
-    @include tc-label-bold;
-  }
 }
 
 .chip {

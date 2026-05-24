@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="de">
+<head><meta charset="UTF-8"></head>
+<body style="font-family: Arial, sans-serif; color: #0b1c30; line-height: 1.6;">
+  <h1 style="color: #0a192f;">Vielen Dank, {{ first_name }}!</h1>
+
+  <p>
+    Deine Beitrittserklärung für den SVG-Zweigverein Tennis ist bei uns
+    eingegangen. Wir melden uns in den nächsten Tagen mit den weiteren
+    Schritten – inklusive der Information zur Überweisung des
+    Mitgliedsbeitrags.
+  </p>
+
+  <p><strong>Deine Angaben:</strong></p>
+  <table style="border-collapse: collapse; margin: 16px 0;">
+    <tr>
+      <td style="padding: 6px 16px 6px 0; vertical-align: top;"><strong>Name</strong></td>
+      <td style="padding: 6px 0;">{{ first_name }} {{ last_name }}</td>
+    </tr>
+    <tr>
+      <td style="padding: 6px 16px 6px 0; vertical-align: top;"><strong>Adresse</strong></td>
+      <td style="padding: 6px 0;">{{ street }}<br>{{ postal_code }} {{ city }}</td>
+    </tr>
+    <tr>
+      <td style="padding: 6px 16px 6px 0; vertical-align: top;"><strong>Geburtsdatum</strong></td>
+      <td style="padding: 6px 0;">{{ birth_date }}</td>
+    </tr>
+    <tr>
+      <td style="padding: 6px 16px 6px 0; vertical-align: top;"><strong>Telefon</strong></td>
+      <td style="padding: 6px 0;">{{ phone }}</td>
+    </tr>
+    <tr>
+      <td style="padding: 6px 16px 6px 0; vertical-align: top;"><strong>Beitragsstufe</strong></td>
+      <td style="padding: 6px 0;">{{ fee_tier }}</td>
+    </tr>
+  </table>
+
+  <p style="color: #44474d; font-size: 14px;">
+    Solltest du Fragen haben oder Angaben korrigieren wollen, antworte
+    einfach auf diese E-Mail.
+  </p>
+
+  <p style="margin-top: 32px;">Sportliche Grüße<br>Dein SVG Tennis</p>
+</body>
+</html>

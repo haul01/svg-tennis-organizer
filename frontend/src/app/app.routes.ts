@@ -11,6 +11,15 @@ export const routes: Routes = [
   // when no session exists).
   { path: '', pathMatch: 'full', redirectTo: '/reservations' },
   {
+    // Public, unlinked: hand the URL out personally to interested
+    // applicants. Lives outside the auth-routes module on purpose so
+    // there's no temptation to wire a nav link from the login screen.
+    path: 'beitritt',
+    title: 'Beitrittserklärung',
+    loadComponent: () =>
+      import('./features/membership/apply.component').then(m => m.MembershipApplyComponent)
+  },
+  {
     path: '',
     loadChildren: () => import('./features/auth/auth.routes').then(m => m.authRoutes)
   },

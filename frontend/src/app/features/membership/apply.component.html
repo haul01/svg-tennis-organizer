@@ -1,0 +1,246 @@
+<main class="apply-page">
+  <header class="brand">
+    <img
+      src="assets/logo.png"
+      alt="SV Gramastetten"
+      class="brand__logo"
+      width="120"
+      height="128"
+    />
+    <p class="brand__tagline">SVG-Zweigverein Tennis</p>
+  </header>
+
+  @if (submitted()) {
+    <section class="card" aria-live="polite">
+      <hgroup class="card__heading">
+        <h1>Vielen Dank!</h1>
+        <p>
+          Deine Beitrittserklärung ist bei uns eingegangen. Du erhältst
+          gleich eine Bestätigung per E-Mail. Wir melden uns in den
+          nächsten Tagen mit den weiteren Schritten und der Information
+          zur Überweisung des Mitgliedsbeitrags.
+        </p>
+      </hgroup>
+    </section>
+  } @else {
+    <section class="card" aria-labelledby="apply-heading">
+      <hgroup class="card__heading">
+        <h1 id="apply-heading">Beitrittserklärung</h1>
+        <p>
+          Mit dem Absenden dieses Formulars erklärst du dich bereit, dem
+          SVG-Zweigverein Tennis beizutreten. Felder mit * sind
+          Pflichtfelder.
+        </p>
+      </hgroup>
+
+      @if (errorMessage(); as msg) {
+        <div class="error-banner" role="alert">
+          <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
+          <span>{{ msg }}</span>
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <fieldset class="fieldset">
+          <legend>Persönliche Daten</legend>
+
+          <div class="row row--two">
+            <mat-form-field appearance="outline">
+              <mat-label>Vorname</mat-label>
+              <input matInput formControlName="firstName" autocomplete="given-name" required />
+              @if (form.controls.firstName.touched && form.controls.firstName.invalid) {
+                <mat-error>Vorname ist erforderlich.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Nachname</mat-label>
+              <input matInput formControlName="lastName" autocomplete="family-name" required />
+              @if (form.controls.lastName.touched && form.controls.lastName.invalid) {
+                <mat-error>Nachname ist erforderlich.</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Straße / Hausnr.</mat-label>
+            <input matInput formControlName="street" autocomplete="street-address" required />
+            @if (form.controls.street.touched && form.controls.street.invalid) {
+              <mat-error>Bitte eine Adresse eintragen.</mat-error>
+            }
+          </mat-form-field>
+
+          <div class="row row--plz-ort">
+            <mat-form-field appearance="outline">
+              <mat-label>PLZ</mat-label>
+              <input matInput formControlName="postalCode" autocomplete="postal-code" required />
+              @if (form.controls.postalCode.touched && form.controls.postalCode.invalid) {
+                <mat-error>PLZ ist erforderlich.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Ort</mat-label>
+              <input matInput formControlName="city" autocomplete="address-level2" required />
+              @if (form.controls.city.touched && form.controls.city.invalid) {
+                <mat-error>Ort ist erforderlich.</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="row row--two">
+            <mat-form-field appearance="outline">
+              <mat-label>Geburtsdatum</mat-label>
+              <input
+                matInput
+                [matDatepicker]="birthPicker"
+                formControlName="birthDate"
+                autocomplete="bday"
+                required
+              />
+              <mat-datepicker-toggle matIconSuffix [for]="birthPicker" />
+              <mat-datepicker #birthPicker startView="multi-year" />
+              @if (form.controls.birthDate.touched && form.controls.birthDate.invalid) {
+                <mat-error>Geburtsdatum ist erforderlich.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Telefon / Handy</mat-label>
+              <input matInput type="tel" formControlName="phone" autocomplete="tel" required />
+              @if (form.controls.phone.touched && form.controls.phone.invalid) {
+                <mat-error>Telefon ist erforderlich.</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline">
+            <mat-label>E-Mail</mat-label>
+            <input matInput type="email" formControlName="email" autocomplete="email" required />
+            @if (form.controls.email.touched && form.controls.email.hasError('required')) {
+              <mat-error>E-Mail ist erforderlich.</mat-error>
+            }
+            @if (form.controls.email.touched && form.controls.email.hasError('email')) {
+              <mat-error>Bitte eine gültige E-Mail eingeben.</mat-error>
+            }
+          </mat-form-field>
+        </fieldset>
+
+        <fieldset class="fieldset">
+          <legend>Mitgliedschaft *</legend>
+          <div class="fees" role="radiogroup" aria-label="Beitragsstufe">
+            @for (opt of feeOptions; track opt.value) {
+              <button
+                type="button"
+                class="fee-card"
+                role="radio"
+                [class.fee-card--checked]="selectedFeeTier() === opt.value"
+                [attr.aria-checked]="selectedFeeTier() === opt.value"
+                (click)="selectFeeTier(opt.value)"
+              >
+                <span class="fee-card__dot" aria-hidden="true"></span>
+                <span class="fee-card__body">
+                  <span class="fee-card__label">{{ opt.label }}</span>
+                  @if (opt.description) {
+                    <span class="fee-card__price">{{ opt.description }}</span>
+                  }
+                </span>
+              </button>
+            }
+          </div>
+          @if (form.controls.feeTier.touched && form.controls.feeTier.invalid) {
+            <p class="field-error">Bitte eine Beitragsstufe auswählen.</p>
+          }
+
+          @if (isMultiPersonTier()) {
+            <p class="info-hint" role="note">
+              <mat-icon fontSet="material-symbols-outlined">info</mat-icon>
+              <span>
+                Diese Mitgliedschaft umfasst mehrere Personen. Bitte für
+                jede weitere Person eine eigene Beitrittserklärung
+                ausfüllen.
+              </span>
+            </p>
+          }
+
+          <p class="iban-note">
+            Beitrag bitte überweisen an:<br />
+            <strong>Raiffeisen Bank Gramastetten – SVG-Zweigverein Tennis</strong><br />
+            IBAN: AT32 3413 5000 0702 5794
+          </p>
+        </fieldset>
+
+        <fieldset class="fieldset">
+          <legend>Anmerkung</legend>
+          <mat-form-field appearance="outline">
+            <mat-label>Optionale Nachricht an den Verein</mat-label>
+            <textarea
+              matInput
+              rows="4"
+              formControlName="comment"
+              maxlength="2000"
+            ></textarea>
+          </mat-form-field>
+        </fieldset>
+
+        <section class="info-block" aria-label="Mitgliedsbeitrag Dachverein">
+          <h2>Mitgliedsbeitrag Dachverein</h2>
+          <p>
+            Zusätzlich zum Tennis-Beitrag wird vom Dachverein
+            Sportvereinigung Gramastetten ein Jahresbeitrag eingehoben:
+          </p>
+          <ul>
+            <li>Erwachsene: € 20,00</li>
+            <li>Ehepaar: € 35,00</li>
+            <li>Familie (Höchstbetrag): € 40,00</li>
+            <li>Kinder und Jugendliche bis 14 Jahre: € 4,00</li>
+            <li>Studenten / Jugendliche 14-18 Jahre: € 8,00</li>
+          </ul>
+          <p class="info-block__iban">
+            <strong>Raiffeisen Bank Gramastetten – SVG (Dachverein)</strong><br />
+            IBAN: AT07 3413 5000 0701 8096
+          </p>
+        </section>
+
+        <fieldset class="fieldset fieldset--consent">
+          <mat-checkbox formControlName="acceptStatutes" color="primary" required>
+            <span class="consent-text">
+              Mit dem Absenden erkenne ich die Statuten der
+              Sportvereinigung Gramastetten an und verpflichte mich zur
+              pünktlichen Zahlung des Mitgliedsbeitrags. Ein Austritt
+              hat schriftlich zu erfolgen. Meine personenbezogenen Daten
+              werden ausschließlich vereinsintern verwendet und nicht an
+              Dritte weitergegeben. *
+            </span>
+          </mat-checkbox>
+          @if (form.controls.acceptStatutes.touched && form.controls.acceptStatutes.invalid) {
+            <p class="field-error">Bitte die Statuten bestätigen, um fortzufahren.</p>
+          }
+        </fieldset>
+
+        <button
+          mat-flat-button
+          type="submit"
+          class="submit"
+          [disabled]="submitting()"
+        >
+          @if (submitting()) {
+            <span class="submit__content">
+              <mat-spinner diameter="20" class="submit__spinner" />
+              Wird gesendet…
+            </span>
+          } @else {
+            <span class="submit__content">
+              Beitrittserklärung absenden
+              <mat-icon fontSet="material-symbols-outlined">arrow_forward</mat-icon>
+            </span>
+          }
+        </button>
+      </form>
+    </section>
+  }
+
+  <footer class="footer">
+    <span>© {{ currentYear }} SV Gramastetten</span>
+  </footer>
+</main>

@@ -23,6 +23,8 @@ import {
   ConfirmDialogData
 } from '../../../shared/components/confirm-dialog.component';
 import { CreateMemberDialogComponent } from './create-member-dialog.component';
+import { ImportCsvDialogComponent } from './import-csv-dialog.component';
+import { ImportCsvSummary } from '../../../core/api/members.api';
 
 type StatusFilter = 'all' | 'active' | 'inactive';
 
@@ -104,6 +106,25 @@ export class MembersListComponent {
       if (created) {
         this.snackBar.open(
           `Mitglied angelegt. Willkommens-Mail an ${created.email} verschickt.`,
+          'OK',
+          { duration: 4000 }
+        );
+        void this.reload();
+      }
+    });
+  }
+
+  openImport(): void {
+    const ref = this.dialog.open<
+      ImportCsvDialogComponent, void, ImportCsvSummary | null
+    >(ImportCsvDialogComponent, { width: '560px', autoFocus: false });
+    ref.afterClosed().subscribe(summary => {
+      if (!summary) return;
+      if (summary.created > 0) {
+        const skipped = summary.skippedEmails.length;
+        const skippedHint = skipped > 0 ? ` ${skipped} übersprungen.` : '';
+        this.snackBar.open(
+          `${summary.created} neue Mitglieder importiert.${skippedHint}`,
           'OK',
           { duration: 4000 }
         );

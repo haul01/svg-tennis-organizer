@@ -1,0 +1,108 @@
+<h2 mat-dialog-title>Mitglieder per CSV importieren</h2>
+
+<mat-dialog-content>
+  @if (!summary()) {
+    <p class="hint">
+      <mat-icon fontSet="material-symbols-outlined">info</mat-icon>
+      Erwartetes Format: erste Zeile als Kopf, danach pro Zeile
+      <code>Vorname;Nachname;E-Mail</code>. Bestehende E-Mail-Adressen
+      werden übersprungen. Neue Mitglieder bekommen die Rolle
+      <strong>Member</strong> und automatisch die Willkommens-Mail.
+    </p>
+
+    <label class="file-picker">
+      <input
+        type="file"
+        accept=".csv,text/csv"
+        (change)="onFileSelected($event)"
+        [disabled]="submitting()"
+      />
+      <span class="file-picker__face">
+        <mat-icon fontSet="material-symbols-outlined">upload_file</mat-icon>
+        @if (file(); as f) {
+          <span class="file-picker__name">{{ f.name }}</span>
+          <span class="file-picker__size">{{ (f.size / 1024) | number: '1.0-1' }} KB</span>
+        } @else {
+          <span class="file-picker__placeholder">CSV-Datei auswählen…</span>
+        }
+      </span>
+    </label>
+
+    @if (errorMessage(); as msg) {
+      <div class="error-banner" role="alert">
+        <mat-icon fontSet="material-symbols-outlined">error</mat-icon>
+        <span>{{ msg }}</span>
+      </div>
+    }
+  } @else {
+    <div class="summary">
+      <div class="summary__row summary__row--ok">
+        <mat-icon fontSet="material-symbols-outlined">check_circle</mat-icon>
+        <span><strong>{{ summary()!.created }}</strong> neue Mitglieder angelegt.</span>
+      </div>
+
+      @if (summary()!.skippedEmails.length > 0) {
+        <details class="summary__detail">
+          <summary>
+            {{ summary()!.skippedEmails.length }} bereits vorhandene
+            E-Mail-Adresse(n) übersprungen
+          </summary>
+          <ul>
+            @for (email of summary()!.skippedEmails; track email) {
+              <li>{{ email }}</li>
+            }
+          </ul>
+        </details>
+      }
+
+      @if (summary()!.failed.length > 0) {
+        <details class="summary__detail summary__detail--warn" open>
+          <summary>
+            {{ summary()!.failed.length }} Zeile(n) konnten nicht
+            verarbeitet werden
+          </summary>
+          <ul>
+            @for (row of summary()!.failed; track row.lineNumber) {
+              <li>
+                Zeile {{ row.lineNumber }}@if (row.email) {
+                  ({{ row.email }})
+                }: {{ row.message }}
+              </li>
+            }
+          </ul>
+        </details>
+      }
+    </div>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  @if (!summary()) {
+    <button
+      mat-stroked-button
+      type="button"
+      (click)="ref.close(null)"
+      [disabled]="submitting()"
+    >Abbrechen</button>
+    <button
+      mat-flat-button
+      type="button"
+      class="submit"
+      [disabled]="!file() || submitting()"
+      (click)="submit()"
+    >
+      @if (submitting()) {
+        <span class="submit__content">
+          <mat-spinner diameter="18" class="submit__spinner" />
+          Wird importiert…
+        </span>
+      } @else {
+        <span>Importieren</span>
+      }
+    </button>
+  } @else {
+    <button mat-flat-button type="button" class="submit" (click)="close()">
+      Schließen
+    </button>
+  }
+</mat-dialog-actions>

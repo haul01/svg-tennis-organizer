@@ -1,0 +1,17 @@
+Neue Beitrittserklärung
+Eingegangen am {{ submitted_at }}.
+
+Name:           {{ first_name }} {{ last_name }}
+Adresse:        {{ street }}, {{ postal_code }} {{ city }}
+Geburtsdatum:   {{ birth_date }}
+Telefon:        {{ phone }}
+E-Mail:         {{ email }}
+Beitragsstufe:  {{ fee_tier }}
+
+{{ if has_comment }}
+Anmerkung:
+{{ comment }}
+{{ end }}
+
+Diese E-Mail wurde automatisch durch das Beitrittsformular auf der
+Website erzeugt.

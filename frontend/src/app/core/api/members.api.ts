@@ -54,4 +54,23 @@ export class MembersApi {
       { role }
     );
   }
+
+  importCsv(file: File): Observable<ImportCsvSummary> {
+    const form = new FormData();
+    form.append('file', file, file.name);
+    return this.http.post<ImportCsvSummary>(`${this.baseUrl}/import`, form);
+  }
+}
+
+export interface ImportCsvRowError {
+  lineNumber: number;
+  email: string | null;
+  message: string;
+}
+
+export interface ImportCsvSummary {
+  totalRows: number;
+  created: number;
+  skippedEmails: string[];
+  failed: ImportCsvRowError[];
 }

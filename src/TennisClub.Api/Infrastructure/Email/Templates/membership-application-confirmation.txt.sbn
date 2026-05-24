@@ -1,0 +1,19 @@
+Vielen Dank, {{ first_name }}!
+
+Deine Beitrittserklärung für den SVG-Zweigverein Tennis ist bei uns
+eingegangen. Wir melden uns in den nächsten Tagen mit den weiteren
+Schritten - inklusive der Information zur Überweisung des
+Mitgliedsbeitrags.
+
+Deine Angaben:
+Name:           {{ first_name }} {{ last_name }}
+Adresse:        {{ street }}, {{ postal_code }} {{ city }}
+Geburtsdatum:   {{ birth_date }}
+Telefon:        {{ phone }}
+Beitragsstufe:  {{ fee_tier }}
+
+Solltest du Fragen haben oder Angaben korrigieren wollen, antworte
+einfach auf diese E-Mail.
+
+Sportliche Grüße
+Dein SVG Tennis

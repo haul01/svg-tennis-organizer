@@ -31,10 +31,12 @@ using TennisClub.Api.Features.GuestPlayers.ListForMember;
 using TennisClub.Api.Features.Members.ChangeRole;
 using TennisClub.Api.Features.Members.Create;
 using TennisClub.Api.Features.Members.Get;
+using TennisClub.Api.Features.Members.ImportCsv;
 using TennisClub.Api.Features.Members.List;
 using TennisClub.Api.Features.Members.SetActive;
 using TennisClub.Api.Features.Members.TriggerPasswordReset;
 using TennisClub.Api.Features.Members.Update;
+using TennisClub.Api.Features.Membership.Apply;
 using TennisClub.Api.Features.Profile.ChangePassword;
 using TennisClub.Api.Features.Profile.Get;
 using TennisClub.Api.Features.Profile.Update;
@@ -160,6 +162,19 @@ builder.Services.AddRateLimiter(opts =>
                 QueueLimit = 0
             }));
 
+    // Public membership application form: same shape, slightly tighter limit
+    // because there's no upstream sign-in cost to deter abuse.
+    opts.AddPolicy("membership-apply", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 3,
+                Window = TimeSpan.FromHours(1),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            }));
+
     // Forgot-password also sends mail through Brevo. Same protection.
     opts.AddPolicy("auth-forgot", httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
@@ -195,6 +210,8 @@ builder.Services.AddScoped<ChangePasswordHandler>();
 builder.Services.AddScoped<ListMembersHandler>();
 builder.Services.AddScoped<GetMemberHandler>();
 builder.Services.AddScoped<CreateMemberHandler>();
+builder.Services.AddScoped<ImportCsvHandler>();
+builder.Services.AddScoped<ApplyMembershipHandler>();
 builder.Services.AddScoped<UpdateMemberHandler>();
 builder.Services.AddScoped<SetActiveHandler>();
 builder.Services.AddScoped<TriggerPasswordResetHandler>();
@@ -246,6 +263,8 @@ else
 // Settings binding.
 builder.Services.Configure<FrontendSettings>(
     builder.Configuration.GetSection(FrontendSettings.SectionName));
+builder.Services.Configure<MembershipApplicationSettings>(
+    builder.Configuration.GetSection(MembershipApplicationSettings.SectionName));
 builder.Services.Configure<SeedOptions>(
     builder.Configuration.GetSection(SeedOptions.SectionName));
 

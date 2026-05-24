@@ -5,10 +5,16 @@
       <h1>Mitglieder</h1>
       <p class="page__subtitle">Verwalte Profile und Status aller Clubmitglieder.</p>
     </div>
-    <button mat-flat-button class="cta" (click)="openCreate()">
-      <mat-icon fontSet="material-symbols-outlined">person_add</mat-icon>
-      Neues Mitglied
-    </button>
+    <div class="page__actions">
+      <button mat-stroked-button class="cta-secondary" (click)="openImport()">
+        <mat-icon fontSet="material-symbols-outlined">upload_file</mat-icon>
+        CSV-Import
+      </button>
+      <button mat-flat-button class="cta" (click)="openCreate()">
+        <mat-icon fontSet="material-symbols-outlined">person_add</mat-icon>
+        Neues Mitglied
+      </button>
+    </div>
   </header>
 
   <div class="toolbar">
