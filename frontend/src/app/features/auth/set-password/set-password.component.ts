@@ -87,9 +87,7 @@ export class SetPasswordComponent {
       error: (err: HttpErrorResponse) => {
         this.submitting.set(false);
         const fallback = 'Der Link ist ungültig oder abgelaufen. Bitte fordere einen neuen an.';
-        const apiError = err.error?.error as string | undefined;
-        const apiFailures = err.error?.failures as { code: string; message: string }[] | undefined;
-        this.errorMessage.set(apiError ?? apiFailures?.[0]?.message ?? fallback);
+        this.errorMessage.set(extractServerMessage(err) ?? fallback);
       }
     });
   }
@@ -99,4 +97,22 @@ function passwordsMatchValidator(group: AbstractControl): ValidationErrors | nul
   const a = group.get('newPassword')?.value;
   const b = group.get('confirmPassword')?.value;
   return a && b && a !== b ? { passwordsMismatch: true } : null;
+}
+
+/**
+ * The backend returns two different 400 shapes: the Result pattern
+ * ({ error, failures }) for handler/business failures, and ASP.NET's
+ * ProblemDetails ({ errors: { field: [msg] } }) for FluentValidation
+ * failures (e.g. password too short). Read both so a password-policy error
+ * surfaces as itself instead of the misleading "link expired" fallback.
+ */
+function extractServerMessage(err: HttpErrorResponse): string | undefined {
+  const body = err.error as
+    | { error?: string; failures?: { message: string }[]; errors?: Record<string, string[]> }
+    | undefined;
+  if (!body) return undefined;
+  if (body.error) return body.error;
+  if (body.failures?.length) return body.failures[0].message;
+  const firstField = body.errors && Object.values(body.errors).find(m => m?.length);
+  return firstField?.[0];
 }

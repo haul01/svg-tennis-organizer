@@ -2,6 +2,7 @@ using System.Text;
 using System.Threading.RateLimiting;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -130,6 +131,19 @@ builder.Services.AddAuthorization(opts =>
     opts.AddPolicy("Admin", p => p.RequireRole(SeedData.AdminRole));
     opts.AddPolicy("TrainerOrAdmin",
         p => p.RequireRole(SeedData.TrainerRole, SeedData.AdminRole));
+});
+
+// Behind the Pi's reverse proxy (Caddy) the TCP peer is always the proxy,
+// so without this every client would share one rate-limit partition (a
+// single global 5/min login bucket for the whole club). Trust the proxy's
+// X-Forwarded-For/-Proto so RemoteIpAddress reflects the real client. The
+// API is only reachable through the proxy, so clearing the known-proxy
+// allow-list is acceptable for this single-hop deployment.
+builder.Services.Configure<ForwardedHeadersOptions>(opts =>
+{
+    opts.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    opts.KnownIPNetworks.Clear();
+    opts.KnownProxies.Clear();
 });
 
 // Rate limiting: protect login endpoint from brute-force.
@@ -309,6 +323,10 @@ if (!app.Environment.IsEnvironment("Testing"))
     }
     await SeedData.RunAsync(app.Services);
 }
+
+// Must run before anything that reads the client IP or scheme (rate limiter,
+// HTTPS redirect) so the proxy's forwarded headers are applied first.
+app.UseForwardedHeaders();
 
 app.UseHttpsRedirection();
 app.UseCors();

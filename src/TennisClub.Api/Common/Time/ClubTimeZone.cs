@@ -21,4 +21,20 @@ public static class ClubTimeZone
 
     public static TimeOnly LocalTimeOfDay(DateTimeOffset value) =>
         TimeOnly.FromDateTime(LocalDateTime(value));
+
+    /// <summary>
+    /// Interprets a wall-clock <see cref="DateTime"/> as Vienna local time and
+    /// returns the matching instant with the correct (DST-aware) offset. Use
+    /// this whenever the source carries a date + time-of-day with no real
+    /// offset (e.g. a TimeOnly from an admin form) — never stamp such values
+    /// with <c>TimeSpan.Zero</c>, which would silently treat them as UTC.
+    /// </summary>
+    public static DateTimeOffset ToInstant(DateTime localWallClock)
+    {
+        var unspecified = DateTime.SpecifyKind(localWallClock, DateTimeKind.Unspecified);
+        // GetUtcOffset resolves the offset per occurrence, so a series that
+        // straddles a DST switch gets +02:00 before and +01:00 after.
+        var offset = Vienna.GetUtcOffset(unspecified);
+        return new DateTimeOffset(unspecified, offset);
+    }
 }

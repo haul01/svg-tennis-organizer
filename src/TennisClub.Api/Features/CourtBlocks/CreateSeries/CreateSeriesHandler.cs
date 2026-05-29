@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TennisClub.Api.Common.Results;
+using TennisClub.Api.Common.Time;
 using TennisClub.Api.Domain.Entities;
 using TennisClub.Api.Features.CourtBlocks.Shared;
 using TennisClub.Api.Infrastructure.Persistence;
@@ -90,7 +91,7 @@ public sealed class CreateSeriesHandler(
         return exists ? [req.CourtId] : null;
     }
 
-    private static List<BlockConflictChecker.BlockInterval> ExpandSeries(
+    internal static List<BlockConflictChecker.BlockInterval> ExpandSeries(
         CreateSeriesRequest req, IReadOnlyList<int> courtIds)
     {
         var list = new List<BlockConflictChecker.BlockInterval>();
@@ -102,13 +103,13 @@ public sealed class CreateSeriesHandler(
 
         while (cursor <= req.EndDate)
         {
-            // Keep the wall-clock offset from the request (Austrian local
-            // time) so the interval stays within the intended slot across
-            // DST. UTC offset zero matches existing behavior.
-            var start = new DateTimeOffset(
-                cursor.ToDateTime(req.StartTime), TimeSpan.Zero);
-            var end = new DateTimeOffset(
-                cursor.ToDateTime(req.EndTime), TimeSpan.Zero);
+            // StartTime/EndTime are Austrian wall-clock times. Convert each
+            // occurrence to a real instant via the club timezone (DST-aware)
+            // so the block lands on the same local slot members book — using
+            // TimeSpan.Zero here would store the time as UTC and shift the
+            // block 1-2h off the intended hour.
+            var start = ClubTimeZone.ToInstant(cursor.ToDateTime(req.StartTime));
+            var end = ClubTimeZone.ToInstant(cursor.ToDateTime(req.EndTime));
             foreach (var cid in courtIds)
             {
                 list.Add(new BlockConflictChecker.BlockInterval(cid, start, end));

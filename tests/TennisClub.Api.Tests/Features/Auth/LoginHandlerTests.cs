@@ -1,7 +1,9 @@
 using FluentAssertions;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TennisClub.Api.Common.Results;
+using TennisClub.Api.Domain.Entities;
 using TennisClub.Api.Features.Auth.Login;
 using TennisClub.Api.Infrastructure.Persistence;
 using TennisClub.Api.Tests.TestInfrastructure;
@@ -86,5 +88,55 @@ public class LoginHandlerTests : IAsyncLifetime
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var tokenCount = await db.RefreshTokens.CountAsync();
         tokenCount.Should().Be(0, "no refresh token should be issued for inactive users");
+    }
+
+    [Fact]
+    public async Task Login_AfterMaxFailedAttempts_LocksOutEvenWithCorrectPassword()
+    {
+        await _host.SeedMemberAsync("dave@club.test", "Dave1234!");
+        var handler = _host.Services.GetRequiredService<LoginHandler>();
+
+        // MaxFailedAccessAttempts = 5 -> the fifth wrong password trips lockout.
+        for (var i = 0; i < 5; i++)
+        {
+            var bad = await handler.HandleAsync(
+                new LoginRequest("dave@club.test", "wrong-pw"), CancellationToken.None);
+            bad.Status.Should().Be(ResultStatus.Unauthorized);
+        }
+
+        // Correct password is now refused while the account is locked.
+        var locked = await handler.HandleAsync(
+            new LoginRequest("dave@club.test", "Dave1234!"), CancellationToken.None);
+        locked.Status.Should().Be(ResultStatus.Unauthorized);
+        locked.Error.Should().Be("Login fehlgeschlagen.",
+            "the lockout response must stay generic for enumeration protection");
+
+        using var scope = _host.Services.CreateScope();
+        var users = scope.ServiceProvider.GetRequiredService<UserManager<Member>>();
+        var user = await users.FindByEmailAsync("dave@club.test");
+        (await users.IsLockedOutAsync(user!)).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Login_SuccessfulLogin_ResetsTheFailedAttemptCounter()
+    {
+        await _host.SeedMemberAsync("erin@club.test", "Erin1234!");
+        var handler = _host.Services.GetRequiredService<LoginHandler>();
+
+        // Four failures (one below the threshold), then a success must reset.
+        for (var i = 0; i < 4; i++)
+        {
+            await handler.HandleAsync(
+                new LoginRequest("erin@club.test", "wrong-pw"), CancellationToken.None);
+        }
+
+        var ok = await handler.HandleAsync(
+            new LoginRequest("erin@club.test", "Erin1234!"), CancellationToken.None);
+        ok.IsSuccess.Should().BeTrue();
+
+        using var scope = _host.Services.CreateScope();
+        var users = scope.ServiceProvider.GetRequiredService<UserManager<Member>>();
+        var user = await users.FindByEmailAsync("erin@club.test");
+        (await users.GetAccessFailedCountAsync(user!)).Should().Be(0);
     }
 }

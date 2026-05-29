@@ -9,7 +9,7 @@ public sealed class ChangePasswordValidator : AbstractValidator<ChangePasswordRe
         RuleFor(x => x.CurrentPassword).NotEmpty();
         RuleFor(x => x.NewPassword)
             .NotEmpty()
-            .MinimumLength(8)
+            .MinimumLength(6).WithMessage("Das Passwort muss mindestens 6 Zeichen lang sein.")
             .NotEqual(x => x.CurrentPassword)
                 .WithMessage("Das neue Passwort muss sich vom aktuellen unterscheiden.");
     }
