@@ -19,13 +19,28 @@ public sealed class LoginHandler(
     {
         var user = await users.FindByEmailAsync(req.Email);
 
-        if (user is null
-            || !user.IsActive
-            || !await users.CheckPasswordAsync(user, req.Password))
+        // Intentionally generic everywhere below - prevents account enumeration
+        // (unknown email, wrong password, inactive and locked-out all look alike).
+        if (user is null || !user.IsActive)
         {
-            // Intentionally generic - prevents account enumeration.
             return Result.Unauthorized("Login fehlgeschlagen.");
         }
+
+        // Drive the Identity lockout state machine that Program.cs configures
+        // (5 failures -> 15 min lockout). CheckPasswordAsync alone never
+        // touches it, so without this the brute-force protection is inert.
+        if (await users.IsLockedOutAsync(user))
+        {
+            return Result.Unauthorized("Login fehlgeschlagen.");
+        }
+
+        if (!await users.CheckPasswordAsync(user, req.Password))
+        {
+            await users.AccessFailedAsync(user);
+            return Result.Unauthorized("Login fehlgeschlagen.");
+        }
+
+        await users.ResetAccessFailedCountAsync(user);
 
         var roles = await users.GetRolesAsync(user);
         var accessToken = jwt.CreateAccessToken(user, roles);

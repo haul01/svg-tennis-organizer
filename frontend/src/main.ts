@@ -1,6 +1,13 @@
+import { registerLocaleData } from '@angular/common';
+import localeDeAt from '@angular/common/locales/de-AT';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { appConfig } from './app/app.config';
 import { App } from './app/app';
+
+// LOCALE_ID is set to 'de-AT' (app.config.ts) but Angular only ships en-US
+// locale data by default. Register de-AT here so i18n pipes (e.g. the
+// DecimalPipe in the CSV import dialog) don't throw NG0701 at runtime.
+registerLocaleData(localeDeAt);
 
 // Safety net against stale-chunk problems after a backend deploy.
 // Angular lazy-loads route bundles by content-hashed filename. If the

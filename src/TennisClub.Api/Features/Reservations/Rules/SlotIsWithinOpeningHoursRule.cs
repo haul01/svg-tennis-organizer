@@ -14,10 +14,17 @@ public sealed class SlotIsWithinOpeningHoursRule(AppDbContext db, TimeProvider t
         // OpeningTime / ClosingTime are TimeOnly without TZ - compare against
         // Vienna wall-clock so a 09:00 Vienna booking matches an 08:00-22:00
         // window even though the JSON arrives as 07:00 UTC.
-        var startTime = ClubTimeZone.LocalTimeOfDay(a.StartsAt);
-        var endTime = ClubTimeZone.LocalTimeOfDay(a.EndsAt);
+        //
+        // Compare full local DateTimes, not just time-of-day: a multi-slot
+        // booking running past local midnight (e.g. 21:00-01:00) would
+        // otherwise have its end wrap to 01:00, which is < ClosingTime, and
+        // slip through - booking the court for hours after closing.
+        var localStart = ClubTimeZone.LocalDateTime(a.StartsAt);
+        var localEnd = ClubTimeZone.LocalDateTime(a.EndsAt);
+        var openingInstant = localStart.Date + season.OpeningTime.ToTimeSpan();
+        var closingInstant = localStart.Date + season.ClosingTime.ToTimeSpan();
 
-        if (startTime < season.OpeningTime || endTime > season.ClosingTime)
+        if (localStart < openingInstant || localEnd > closingInstant)
         {
             return RuleResult.Fail(
                 "OUTSIDE_HOURS",

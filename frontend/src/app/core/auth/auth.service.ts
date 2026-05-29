@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, map, tap, throwError } from 'rxjs';
+import { Observable, finalize, map, shareReplay, tap, throwError } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { AuthResponse } from '../models/auth-response.model';
@@ -49,16 +49,29 @@ export class AuthService {
       .pipe(map(() => void 0));
   }
 
+  private refreshInFlight: Observable<string> | null = null;
+
   refresh(): Observable<string> {
+    // Refresh tokens rotate: the backend revokes the presented token the
+    // moment it issues a replacement. If several requests 401 in parallel
+    // (the week grid fires ~5 on load) and each fired its own /refresh, only
+    // the first would succeed and the rest would hit an already-revoked token
+    // and force a logout. Share a single in-flight call so the token is spent
+    // exactly once and every caller retries with the same fresh access token.
+    if (this.refreshInFlight) return this.refreshInFlight;
+
     const token = localStorage.getItem(REFRESH_KEY);
     if (!token) return throwError(() => new Error('no_refresh_token'));
 
-    return this.http
+    this.refreshInFlight = this.http
       .post<AuthResponse>(`${this.baseUrl}/refresh`, { refreshToken: token })
       .pipe(
         tap(res => this.persistTokens(res)),
-        map(res => res.accessToken)
+        map(res => res.accessToken),
+        finalize(() => { this.refreshInFlight = null; }),
+        shareReplay(1)
       );
+    return this.refreshInFlight;
   }
 
   logout(): void {

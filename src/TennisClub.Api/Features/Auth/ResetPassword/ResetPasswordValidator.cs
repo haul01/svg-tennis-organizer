@@ -8,6 +8,11 @@ public sealed class ResetPasswordValidator : AbstractValidator<ResetPasswordRequ
     {
         RuleFor(x => x.Email).NotEmpty().EmailAddress();
         RuleFor(x => x.Token).NotEmpty();
-        RuleFor(x => x.NewPassword).NotEmpty().MinimumLength(8);
+        // de-AT messages: this text is surfaced to the user on the
+        // set-password screen, so it must not fall back to FluentValidation's
+        // English defaults.
+        RuleFor(x => x.NewPassword)
+            .NotEmpty().WithMessage("Bitte ein Passwort eingeben.")
+            .MinimumLength(8).WithMessage("Das Passwort muss mindestens 8 Zeichen lang sein.");
     }
 }
