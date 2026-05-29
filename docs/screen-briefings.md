@@ -145,7 +145,7 @@ Die App hat zwei Nutzergruppen mit unterschiedlichen Kontexten:
 - Titel „Passwort setzen" oder „Willkommen bei [Vereinsname]"
 - Feld: Neues Passwort (mit Sichtbar-schalten-Icon und Stärke-Indikator)
 - Feld: Passwort wiederholen
-- Passwort-Anforderungen als Checkliste (mindestens 8 Zeichen etc.)
+- Passwort-Anforderungen als Checkliste (mindestens 6 Zeichen etc.)
 - Primär-Button: „Passwort setzen"
 
 **Zustände:**

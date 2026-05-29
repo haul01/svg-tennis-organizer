@@ -13,6 +13,6 @@ public sealed class ResetPasswordValidator : AbstractValidator<ResetPasswordRequ
         // English defaults.
         RuleFor(x => x.NewPassword)
             .NotEmpty().WithMessage("Bitte ein Passwort eingeben.")
-            .MinimumLength(8).WithMessage("Das Passwort muss mindestens 8 Zeichen lang sein.");
+            .MinimumLength(6).WithMessage("Das Passwort muss mindestens 6 Zeichen lang sein.");
     }
 }
