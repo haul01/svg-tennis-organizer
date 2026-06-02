@@ -97,6 +97,39 @@ public class ApplyMembershipHandlerTests
     }
 
     [Fact]
+    public async Task EscapesHtmlInAttackerControlledFields_InHtmlBody()
+    {
+        var (handler, queue) = Build();
+        // The /api/membership/apply endpoint is public + unauthenticated, so
+        // these fields are fully attacker-controlled.
+        var malicious = SampleRequest() with
+        {
+            FirstName = "<script>alert(1)</script>",
+            LastName = "\"><img src=x onerror=alert(1)>",
+            Comment = "<a href=\"https://evil.example\">Antrag freigeben</a>"
+        };
+        await handler.HandleAsync(malicious, CancellationToken.None);
+
+        var collected = new List<EmailMessage>();
+        await foreach (var msg in queue.ReadAllAsync(CancellationToken.None))
+        {
+            collected.Add(msg);
+            if (collected.Count == 2) break;
+        }
+
+        var admin = collected.Single(m => m.To == "admin@club.test");
+
+        // HTML body: no raw markup survives, escaped entities are present.
+        admin.HtmlBody.Should().NotContain("<script>");
+        admin.HtmlBody.Should().NotContain("<img src=x");
+        admin.HtmlBody.Should().NotContain("<a href=\"https://evil.example\"");
+        admin.HtmlBody.Should().Contain("&lt;script&gt;");
+
+        // Plain text body stays raw (text/plain — no escaping needed there).
+        admin.PlainTextBody!.Should().Contain("<script>alert(1)</script>");
+    }
+
+    [Fact]
     public async Task EmitsCommentBlock_OnlyWhenCommentPresent()
     {
         var (handler, queue) = Build();

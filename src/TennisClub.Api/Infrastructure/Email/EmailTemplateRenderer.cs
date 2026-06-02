@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 using Scriban;
 using Scriban.Runtime;
 
@@ -30,6 +32,14 @@ public sealed class EmailTemplateRenderer
     // don't hit the filesystem on every render.
     private readonly ConcurrentDictionary<string, bool> _plainExists = new();
 
+    // Scriban's default syntax does NOT auto-escape, so any model value
+    // rendered into an HTML body must be encoded or it allows HTML/content
+    // injection (the membership-apply form is public and unauthenticated).
+    // UnicodeRanges.All keeps umlauts/accents literal (ä stays "ä") while
+    // still always escaping the HTML-sensitive characters < > & " '.
+    private static readonly HtmlEncoder HtmlEscaper =
+        HtmlEncoder.Create(UnicodeRanges.All);
+
     public EmailTemplateRenderer()
     {
         _templateDir = Path.Combine(
@@ -42,7 +52,7 @@ public sealed class EmailTemplateRenderer
     /// is missing or fails to parse.
     /// </summary>
     public Task<string> RenderAsync<T>(string templateName, T model, CancellationToken ct = default) =>
-        RenderTemplateAsync(templateName, model, ct);
+        RenderTemplateAsync(templateName, model, encodeHtml: true, ct);
 
     /// <summary>
     /// Render both the HTML body and (when a {name}.txt.sbn sibling
@@ -50,7 +60,7 @@ public sealed class EmailTemplateRenderer
     /// </summary>
     public async Task<RenderedEmail> RenderEmailAsync<T>(string templateName, T model, CancellationToken ct = default)
     {
-        var html = await RenderTemplateAsync(templateName, model, ct);
+        var html = await RenderTemplateAsync(templateName, model, encodeHtml: true, ct);
 
         var plainName = $"{templateName}.txt";
         if (!_plainExists.TryGetValue(plainName, out var exists))
@@ -59,22 +69,41 @@ public sealed class EmailTemplateRenderer
             _plainExists[plainName] = exists;
         }
 
+        // Plain text body is text/plain — escaping there would leak literal
+        // "&amp;" / "&lt;" into the message, so we leave it raw.
         var plain = exists
-            ? await RenderTemplateAsync(plainName, model, ct)
+            ? await RenderTemplateAsync(plainName, model, encodeHtml: false, ct)
             : null;
         return new RenderedEmail(html, plain);
     }
 
-    private async Task<string> RenderTemplateAsync<T>(string name, T model, CancellationToken ct)
+    private async Task<string> RenderTemplateAsync<T>(string name, T model, bool encodeHtml, CancellationToken ct)
     {
         var template = _cache.GetOrAdd(name, LoadTemplate);
 
         var scriptObject = new ScriptObject();
         scriptObject.Import(model, renamer: m => ToSnakeCase(m.Name));
+        if (encodeHtml) HtmlEncodeStringValues(scriptObject);
         var context = new TemplateContext();
         context.PushGlobal(scriptObject);
         context.CancellationToken = ct;
         return await template.RenderAsync(context);
+    }
+
+    /// <summary>
+    /// HTML-encode every top-level string value so model data (member names,
+    /// guest names, free-text comments from the public join form, …) cannot
+    /// inject markup into HTML email bodies. Non-string values (bools, dates
+    /// already formatted to strings count here too) and system-generated URLs
+    /// are encoded harmlessly — a URL with no special chars passes through.
+    /// </summary>
+    private static void HtmlEncodeStringValues(ScriptObject obj)
+    {
+        foreach (var key in obj.Keys.ToList())
+        {
+            if (obj[key] is string s)
+                obj[key] = HtmlEscaper.Encode(s);
+        }
     }
 
     private Template LoadTemplate(string name)
