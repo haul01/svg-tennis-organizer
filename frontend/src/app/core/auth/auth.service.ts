@@ -43,6 +43,18 @@ export class AuthService {
       .pipe(map(() => void 0));
   }
 
+  /**
+   * Request a password-reset link. Body is just the email. The backend
+   * always answers 200 OK regardless of whether the address exists or is
+   * active (enumeration protection), so callers should treat a successful
+   * response as "if it existed, a mail is on its way".
+   */
+  forgotPassword(email: string): Observable<void> {
+    return this.http
+      .post<{ message: string }>(`${this.baseUrl}/forgot-password`, { email })
+      .pipe(map(() => void 0));
+  }
+
   resetPassword(email: string, token: string, newPassword: string): Observable<void> {
     return this.http
       .post<void>(`${this.baseUrl}/reset-password`, { email, token, newPassword })

@@ -1,14 +1,17 @@
 import { Routes } from '@angular/router';
 
-import { PlaceholderComponent } from '../../shared/components/placeholder.component';
-
 export const authRoutes: Routes = [
   {
     path: 'login',
     title: 'Anmelden',
     loadComponent: () => import('./login/login.component').then(m => m.LoginComponent)
   },
-  { path: 'forgot-password', component: PlaceholderComponent, title: 'Passwort vergessen' },
+  {
+    path: 'forgot-password',
+    title: 'Passwort vergessen',
+    loadComponent: () =>
+      import('./forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent)
+  },
   {
     path: 'register',
     title: 'Als Gast registrieren',
