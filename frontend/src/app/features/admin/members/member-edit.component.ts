@@ -54,10 +54,12 @@ export class MemberEditComponent {
   readonly errorMessage = signal<string | null>(null);
   readonly failures = signal<ValidationFailure[]>([]);
 
-  // Guest is omitted on purpose: Guest <-> Member must use the dedicated
-  // /role endpoint (last-admin check + refresh-token revocation), surfaced
-  // as the up/down arrow buttons in the members list.
-  readonly availableRoles = MEMBER_ROLES.filter(r => r !== 'Guest');
+  // Include every role (Guest too) so a self-registered member's current
+  // role renders in the select instead of showing blank and submitting an
+  // unknown value the backend rejects. Role promotion/demotion is still meant
+  // to flow through the dedicated /role endpoint (last-admin check +
+  // refresh-token revocation) via the arrow buttons in the members list.
+  readonly availableRoles = MEMBER_ROLES;
 
   readonly createdAtLabel = computed(() => {
     const m = this.member();

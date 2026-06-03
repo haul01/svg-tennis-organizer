@@ -5,7 +5,7 @@ namespace TennisClub.Api.Features.Members.Shared;
 public static class MembershipRoles
 {
     public static readonly string[] All =
-        [SeedData.MemberRole, SeedData.TrainerRole, SeedData.AdminRole];
+        [SeedData.MemberRole, SeedData.TrainerRole, SeedData.AdminRole, SeedData.GuestRole];
 
     public static bool IsKnown(string role) => All.Contains(role);
 }
